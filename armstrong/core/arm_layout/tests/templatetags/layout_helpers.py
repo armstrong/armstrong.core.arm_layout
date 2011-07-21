@@ -14,6 +14,7 @@ import random
 from .._utils import TestCase
 from ..arm_layout_support.models import Foobar
 from ...templatetags import layout_helpers
+from ... import utils
 
 
 def generate_random_model():
@@ -48,7 +49,7 @@ class get_layout_template_nameTestCase(LayoutHelperTestCase):
         random_model_name = "model_name_%d" % random.randint(100, 200)
         model = generate_random_model()
         model._meta.object_name = random_model_name
-        result = layout_helpers.get_layout_template_name(model, "full_name")
+        result = utils.get_layout_template_name(model, "full_name")
         expected = "layout/arm_layout_support/%s/full_name.html" % (
                 random_model_name
         )
@@ -58,14 +59,14 @@ class get_layout_template_nameTestCase(LayoutHelperTestCase):
         random_app_label = "app_label_%d" % random.randint(100, 200)
         model = generate_random_model()
         model._meta.app_label = random_app_label
-        result = layout_helpers.get_layout_template_name(model, "full_name")
+        result = utils.get_layout_template_name(model, "full_name")
         expected = "layout/%s/foobar/full_name.html" % random_app_label
         self.assertEqual(result, expected)
 
     def test_uses_name_in_template_name(self):
         random_name = "layout_name_%d" % random.randint(100, 200)
         model = generate_random_model()
-        result = layout_helpers.get_layout_template_name(model, random_name)
+        result = utils.get_layout_template_name(model, random_name)
         expected = "layout/arm_layout_support/foobar/%s.html" % random_name
         self.assertEqual(result, expected)
 
@@ -73,7 +74,7 @@ class get_layout_template_nameTestCase(LayoutHelperTestCase):
 @contextmanager
 def stub_render_to_string():
     render_to_string = Fake().is_callable().returns("")
-    with patched_context(layout_helpers, "render_to_string",
+    with patched_context(utils, "render_to_string",
             render_to_string):
         yield
 
@@ -81,7 +82,7 @@ def stub_render_to_string():
 @contextmanager
 def stub_get_layout_template_name():
     get_layout_template_name = Fake().is_callable().returns("")
-    with patched_context(layout_helpers, "get_layout_template_name",
+    with patched_context(utils, "get_layout_template_name",
             get_layout_template_name):
         yield
 
@@ -96,12 +97,12 @@ def stub_rendering():
 class RenderObjectNodeTestCase(LayoutHelperTestCase):
     def test_dispatches_to_get_layout_template_name(self):
         model = generate_random_model()
-        random_name = random.randint(100, 200)
+        random_name = '"%d"' % random.randint(100, 200)
         node = layout_helpers.RenderObjectNode("object", random_name)
 
         fake = Fake()
         fake.is_callable().with_args(model, random_name).expects_call()
-        with patched_context(layout_helpers, "get_layout_template_name", fake):
+        with patched_context(utils, "get_layout_template_name", fake):
             with stub_render_to_string():
                 node.render(Context({"object": model}))
 
@@ -110,7 +111,7 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
     def test_uses_the_name_provided_to_init_to_lookup_model(self):
         model = generate_random_model()
         random_object_name = "foo_%d" % random.randint(100, 200)
-        node = layout_helpers.RenderObjectNode(random_object_name, "full_name")
+        node = layout_helpers.RenderObjectNode(random_object_name, "'full_name'")
         with stub_rendering():
             try:
                 node.render(Context({random_object_name: model}))
@@ -120,14 +121,14 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
     def test_passes_request_into_context_if_available(self):
         model = generate_random_model()
         request = self.factory.get("/")
-        node = layout_helpers.RenderObjectNode("object", "show_request")
+        node = layout_helpers.RenderObjectNode("object", "'show_request'")
         result = node.render(Context({"request": request, "object": model}))
 
         self.assertRegexpMatches(result, "WSGIRequest")
 
     def test_does_not_use_RequestContext_by_default(self):
         model = generate_random_model()
-        node = layout_helpers.RenderObjectNode("object", "debug")
+        node = layout_helpers.RenderObjectNode("object", "'debug'")
         with self.settings(DEBUG=False):
             result = node.render(Context({"object": model}))
             self.assertEqual(result.strip(), "debug: off")
@@ -135,7 +136,7 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
     def test_uses_RequestContext_if_request_provided(self):
         model = generate_random_model()
         request = self.factory.get("/")
-        node = layout_helpers.RenderObjectNode("object", "debug")
+        node = layout_helpers.RenderObjectNode("object", "'debug'")
 
         with self.settings(DEBUG=True):
             context = RequestContext(request, {"request": request,
@@ -149,10 +150,11 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
         with stub_get_layout_template_name():
             render_to_string = fudge.Fake().is_callable().expects_call()
             render_to_string.with_args(arg.any(),
-                    dictionary=contains_model(self, model))
-            with patched_context(layout_helpers, "render_to_string",
+                    dictionary=contains_model(self, model),
+                    context_instance=context)
+            with patched_context(utils, "render_to_string",
                     render_to_string):
-                node = layout_helpers.RenderObjectNode("object", "foobar")
+                node = layout_helpers.RenderObjectNode("object", "'foobar'")
                 result = node.render(context)
 
     def test_can_pull_object_out_of_complex_context(self):
@@ -161,10 +163,11 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
         with stub_get_layout_template_name():
             render_to_string = fudge.Fake().is_callable().expects_call()
             render_to_string.with_args(arg.any(),
-                    dictionary=contains_model(self, model))
-            with patched_context(layout_helpers, "render_to_string",
+                    dictionary=contains_model(self, model),
+                    context_instance=context)
+            with patched_context(utils, "render_to_string",
                     render_to_string):
-                node = layout_helpers.RenderObjectNode("list.0", "foobar")
+                node = layout_helpers.RenderObjectNode("list.0", "'foobar'")
                 result = node.render(context)
 
     def test_original_context_is_not_contaminated(self):
@@ -174,7 +177,7 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
         self.assertEqual(Variable("object").resolve(context), obj,
                 msg="sanity check")
         with stub_rendering():
-            node = layout_helpers.RenderObjectNode("list.0", "foobar")
+            node = layout_helpers.RenderObjectNode("list.0", "'foobar'")
             result = node.render(context)
         self.assertEqual(Variable("object").resolve(context), obj)
 
@@ -182,7 +185,7 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
 class render_objectTestCase(TestCase):
     def setUp(self):
         self.model = generate_random_model()
-        self.string = "{% load layout_helpers %}{% render_object object full_page %}"
+        self.string = '{% load layout_helpers %}{% render_object object "full_page" %}'
 
     @property
     def template(self):
@@ -213,3 +216,15 @@ class render_objectTestCase(TestCase):
             self.rendered_template
         expected = "Too few parameters"
         self.assertEqual(e.exception.message, expected)
+
+    def test_evaluates_variable_without_quotations(self):
+        self.string += '{% render_object object layout_var %}'
+        context = self.context
+        context["layout_var"] = "full_page"
+        self.assertRegexpMatches(self.template.render(context),
+                "Title: %s" % self.model.title)
+
+    def test_supports_single_quotes(self):
+        self.string = self.string.replace('"', "'")
+        self.assertRegexpMatches(self.rendered_template,
+                "Title: %s" % self.model.title)
