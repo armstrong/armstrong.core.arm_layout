@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from django.template import Context
+from django.template import RequestContext
 from django.template import Template
 from django.template import TemplateDoesNotExist
 from django.template import Variable
@@ -126,17 +127,19 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
 
     def test_does_not_use_RequestContext_by_default(self):
         model = generate_random_model()
-        request = object()
         node = layout_helpers.RenderObjectNode("object", "debug")
-        result = node.render(Context({"object": model}))
-        self.assertEqual(result.strip(), "debug: off")
+        with self.settings(DEBUG=False):
+            result = node.render(Context({"object": model}))
+            self.assertEqual(result.strip(), "debug: off")
 
     def test_uses_RequestContext_if_request_provided(self):
         model = generate_random_model()
         request = self.factory.get("/")
         node = layout_helpers.RenderObjectNode("object", "debug")
+
         with self.settings(DEBUG=True):
-            context = Context({"request": request, "object": model})
+            context = RequestContext(request, {"request": request,
+                "object": model})
             result = node.render(context)
             self.assertEqual(result.strip(), "debug: on")
 

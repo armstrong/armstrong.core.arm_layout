@@ -32,9 +32,6 @@ class RenderObjectNode(template.Node):
     def render(self, context):
         with sandboxed_context(context):
             kwargs = {"dictionary": context, }
-            if "request" in context:
-                kwargs["context_instance"] = RequestContext(context["request"])
-
             object = self.object.resolve(context)
             context["object"] = object
             return mark_safe(render_to_string(get_layout_template_name(object,
