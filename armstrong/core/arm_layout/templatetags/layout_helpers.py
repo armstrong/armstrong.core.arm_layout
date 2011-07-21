@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import copy
 from django import template
 from django.template import RequestContext
+from django.template.base import TemplateSyntaxError
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
@@ -23,7 +24,7 @@ def sandboxed_context(context):
     context.pop()
 
 
-class RenderObjectNode(object):
+class RenderObjectNode(template.Node):
     def __init__(self, object, name):
         self.object = template.Variable(object)
         self.name = name
@@ -38,3 +39,14 @@ class RenderObjectNode(object):
             context["object"] = object
             return mark_safe(render_to_string(get_layout_template_name(object,
                 self.name), **kwargs))
+
+
+@register.tag(name="render_object")
+def do_render_object(parser, token):
+    tokens = token.split_contents()
+    if len(tokens) is 3:
+        _, object, name = tokens
+        return RenderObjectNode(object, name)
+
+    message = "Too %s parameters" % ("many" if len(tokens) > 3 else "few")
+    raise TemplateSyntaxError(message)

@@ -1,8 +1,10 @@
 from contextlib import contextmanager
 from django.template import Context
+from django.template import Template
 from django.template import TemplateDoesNotExist
 from django.template import Variable
 from django.template.base import VariableDoesNotExist
+from django.template.base import TemplateSyntaxError
 import fudge
 from fudge import Fake, patched_context
 from fudge.inspector import arg
@@ -172,3 +174,39 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
             node = layout_helpers.RenderObjectNode("list.0", "foobar")
             result = node.render(context)
         self.assertEqual(Variable("object").resolve(context), obj)
+
+
+class render_objectTestCase(TestCase):
+    def setUp(self):
+        self.model = generate_random_model()
+        self.string = "{% load layout_helpers %}{% render_object object full_page %}"
+
+    @property
+    def template(self):
+        return Template(self.string)
+
+    @property
+    def context(self):
+        return Context({"object": self.model})
+
+    @property
+    def rendered_template(self):
+        return self.template.render(self.context)
+
+    def test_dispatches_to_RenderObjectNode(self):
+        self.assertRegexpMatches(self.rendered_template,
+                "Title: %s" % self.model.title)
+
+    def test_raises_intelligent_exception_on_error_too_many_parameters(self):
+        self.string += "{% render_object object full_page one_to_many %}"
+        with self.assertRaises(TemplateSyntaxError) as e:
+            self.rendered_template
+        expected = "Too many parameters"
+        self.assertEqual(e.exception.message, expected)
+
+    def test_raises_intelligent_exception_on_error_too_few_parameters(self):
+        self.string += "{% render_object object %}"
+        with self.assertRaises(TemplateSyntaxError) as e:
+            self.rendered_template
+        expected = "Too few parameters"
+        self.assertEqual(e.exception.message, expected)
