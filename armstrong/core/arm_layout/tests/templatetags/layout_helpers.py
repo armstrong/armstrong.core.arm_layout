@@ -9,17 +9,11 @@ from django.template.base import TemplateSyntaxError
 import fudge
 from fudge import Fake, patched_context
 from fudge.inspector import arg
-import random
 
-from .._utils import TestCase
-from ..arm_layout_support.models import Foobar
+from .._utils import *
 from ...templatetags import layout_helpers
 from ... import utils
 
-
-def generate_random_model():
-    random_title = "This is a random title %d" % random.randint(1000, 2000)
-    return Foobar(title=random_title)
 
 
 def contains_model(test_case, model):
@@ -29,46 +23,6 @@ def contains_model(test_case, model):
         return True
     return arg.passes_test(test)
 
-
-class LayoutHelperTestCase(TestCase):
-    def setUp(self):
-        super(LayoutHelperTestCase, self).setUp()
-        m = Foobar()
-        self._original_object_name = m._meta.object_name
-        self._original_app_label = m._meta.app_label
-
-    def tearDown(self):
-        m = Foobar()
-        m._meta.object_name = self._original_object_name
-        m._meta.app_label = self._original_app_label
-        super(LayoutHelperTestCase, self).tearDown()
-
-
-class get_layout_template_nameTestCase(LayoutHelperTestCase):
-    def test_uses_model_name_in_template_name(self):
-        random_model_name = "model_name_%d" % random.randint(100, 200)
-        model = generate_random_model()
-        model._meta.object_name = random_model_name
-        result = utils.get_layout_template_name(model, "full_name")
-        expected = "layout/arm_layout_support/%s/full_name.html" % (
-                random_model_name
-        )
-        self.assertEqual(result, expected)
-
-    def test_uses_app_label_in_template_name(self):
-        random_app_label = "app_label_%d" % random.randint(100, 200)
-        model = generate_random_model()
-        model._meta.app_label = random_app_label
-        result = utils.get_layout_template_name(model, "full_name")
-        expected = "layout/%s/foobar/full_name.html" % random_app_label
-        self.assertEqual(result, expected)
-
-    def test_uses_name_in_template_name(self):
-        random_name = "layout_name_%d" % random.randint(100, 200)
-        model = generate_random_model()
-        result = utils.get_layout_template_name(model, random_name)
-        expected = "layout/arm_layout_support/foobar/%s.html" % random_name
-        self.assertEqual(result, expected)
 
 
 @contextmanager
