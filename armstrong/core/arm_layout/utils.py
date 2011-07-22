@@ -12,7 +12,7 @@ def get_layout_template_name(model, name):
     return ret
 
 
-def render_object(object, name, dictionary=None, context_instance=None):
+def render_model(object, name, dictionary=None, context_instance=None):
     dictionary = dictionary or {}
     dictionary["object"] = object
     return mark_safe(render_to_string(get_layout_template_name(object, name),

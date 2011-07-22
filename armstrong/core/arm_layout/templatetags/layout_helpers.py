@@ -4,7 +4,7 @@ from django import template
 from django.template import RequestContext
 from django.template.base import TemplateSyntaxError
 
-from ..utils import render_object
+from ..utils import render_model
 
 register = template.Library()
 
@@ -17,12 +17,12 @@ class RenderObjectNode(template.Node):
     def render(self, context):
         name = self.name.resolve(context)
         object = self.object.resolve(context)
-        return render_object(object, name, dictionary={},
+        return render_model(object, name, dictionary={},
             context_instance=context)
 
 
-@register.tag(name="render_object")
-def do_render_object(parser, token):
+@register.tag(name="render_model")
+def do_render_model(parser, token):
     tokens = token.split_contents()
     if len(tokens) is 3:
         _, object, name = tokens

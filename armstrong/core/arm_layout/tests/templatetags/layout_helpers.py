@@ -135,11 +135,11 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
         self.assertEqual(Variable("object").resolve(context), obj)
 
 
-class render_objectTestCase(TestCase):
+class render_modelTestCase(TestCase):
     def setUp(self):
         self.model = generate_random_model()
         self.string = """
-            {% load layout_helpers %}{% render_object object "full_page" %}
+            {% load layout_helpers %}{% render_model object "full_page" %}
         """.strip()
 
     @property
@@ -159,21 +159,21 @@ class render_objectTestCase(TestCase):
                 "Title: %s" % self.model.title)
 
     def test_raises_intelligent_exception_on_error_too_many_parameters(self):
-        self.string += "{% render_object object full_page one_to_many %}"
+        self.string += "{% render_model object full_page one_to_many %}"
         with self.assertRaises(TemplateSyntaxError) as e:
             self.rendered_template
         expected = "Too many parameters"
         self.assertEqual(e.exception.message, expected)
 
     def test_raises_intelligent_exception_on_error_too_few_parameters(self):
-        self.string += "{% render_object object %}"
+        self.string += "{% render_model object %}"
         with self.assertRaises(TemplateSyntaxError) as e:
             self.rendered_template
         expected = "Too few parameters"
         self.assertEqual(e.exception.message, expected)
 
     def test_evaluates_variable_without_quotations(self):
-        self.string += '{% render_object object layout_var %}'
+        self.string += '{% render_model object layout_var %}'
         context = self.context
         context["layout_var"] = "full_page"
         self.assertRegexpMatches(self.template.render(context),

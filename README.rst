@@ -25,10 +25,10 @@ top of the file)::
 
     {% load layout_helpers %}
 
-Now, you can use the ``{% render_object %}`` template tag to render any model
+Now, you can use the ``{% render_model %}`` template tag to render any model
 like this::
 
-    {% render_object some_model "full_page" %}
+    {% render_model some_model "full_page" %}
 
 Let's assume ``some_model`` is a model called ``Article`` that extends the
 model ``Content``.  These models are in ``armstrong.apps.articles`` and
@@ -43,7 +43,7 @@ These template names follow the pattern of
 is currently concerned with HTML, so the ``html`` extension is the default.  It
 may be configurable in future releases.
 
-The two parameters you provide ``render_object`` are a variable that represents
+The two parameters you provide ``render_model`` are a variable that represents
 a model and the name of the layout you want to use for that model.  The name
 can be either a string (surrounded by single or double quotation marks) or a
 variable to that can be resolved to a string.
@@ -53,7 +53,7 @@ context of the calling template, plus a new variable called ``object`` that
 represents the model you passed in.
 
 .. note:: The ``object`` variable inside ``full_page.html`` is only available
-          inside the template.  Once ``render_object`` has finished, ``object``
+          inside the template.  Once ``render_model`` has finished, ``object``
           is removed from the context.  Any variable called ``object`` in the
           calling template is left untouched.
 
