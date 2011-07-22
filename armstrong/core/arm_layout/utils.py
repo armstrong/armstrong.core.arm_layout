@@ -3,10 +3,13 @@ from django.template.loader import render_to_string
 
 
 def get_layout_template_name(model, name):
-    return "layout/%s/%s/%s.html" % (
-        model._meta.app_label,
-        model._meta.object_name.lower(),
-        name)
+    ret = []
+    for a in model.__class__.mro():
+        if not hasattr(a, "_meta"):
+            continue
+        ret.append("layout/%s/%s/%s.html" % (a._meta.app_label,
+            a._meta.object_name.lower(), name))
+    return ret
 
 
 def render_object(object, name, dictionary=None, context_instance=None):
