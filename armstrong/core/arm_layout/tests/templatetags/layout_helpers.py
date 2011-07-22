@@ -15,14 +15,12 @@ from ...templatetags import layout_helpers
 from ... import utils
 
 
-
 def contains_model(test_case, model):
     def test(value):
         test_case.assertTrue("object" in value, msg="sanity check")
         test_case.assertEqual(model, value["object"])
         return True
     return arg.passes_test(test)
-
 
 
 @contextmanager
@@ -65,7 +63,8 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
     def test_uses_the_name_provided_to_init_to_lookup_model(self):
         model = generate_random_model()
         random_object_name = "foo_%d" % random.randint(100, 200)
-        node = layout_helpers.RenderObjectNode(random_object_name, "'full_name'")
+        node = layout_helpers.RenderObjectNode(random_object_name,
+                "'full_name'")
         with stub_rendering():
             try:
                 node.render(Context({random_object_name: model}))
@@ -139,7 +138,9 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
 class render_objectTestCase(TestCase):
     def setUp(self):
         self.model = generate_random_model()
-        self.string = '{% load layout_helpers %}{% render_object object "full_page" %}'
+        self.string = """
+            {% load layout_helpers %}{% render_object object "full_page" %}
+        """.strip()
 
     @property
     def template(self):

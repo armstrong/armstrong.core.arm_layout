@@ -17,6 +17,3 @@ def render_object(object, name, dictionary=None, context_instance=None):
     dictionary["object"] = object
     return mark_safe(render_to_string(get_layout_template_name(object, name),
         dictionary=dictionary, context_instance=context_instance))
-
-
-
