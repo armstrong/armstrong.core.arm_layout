@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import copy
 from django import template
 from django.template import RequestContext
-from django.template.base import TemplateSyntaxError
+from django.template.base import TemplateSyntaxError, VariableDoesNotExist
 
 from ..utils import render_model
 
@@ -48,7 +48,7 @@ class RenderListNode(template.Node):
 
 
 @register.tag(name="render_list")
-def do_render_model(parser, token):
+def do_render_list(parser, token):
     tokens = token.split_contents()
     if len(tokens) is 3:
         _, obj_list, name = tokens
@@ -71,14 +71,7 @@ class RenderIterNode(template.Node):
         else:
             parentiter = {}
         context.push()
-        try:
-            objs = self.obj_list.resolve(context)
-        except VariableDoesNotExist:
-            objs = []
-        if objs is None:
-            objs = []
-        if not hasattr(objs, '__iter__'):
-            objs = list(objs)
+        objs = self.obj_list.resolve(context)
         iterator = iter(objs)
         context['iter'] = {
                     'next': iterator.next,
@@ -137,7 +130,7 @@ class RenderRemainderNode(template.Node):
         name = self.name.resolve(context)
         result = []
         try:
-            while(True):
+            while True:
                 obj = context['iter']['next']()
                 result.append(render_model(obj,
                                            name,
