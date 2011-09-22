@@ -73,10 +73,7 @@ class RenderIterNode(template.Node):
         context.push()
         objs = self.obj_list.resolve(context)
         iterator = iter(objs)
-        context['iter'] = {
-                    'next': iterator.next,
-                    'parent': parentiter,
-                }
+        context['iter'] = iterator
         nodelist = template.NodeList()
         try:
             for node in self.nodelist_contents:
@@ -107,7 +104,7 @@ class RenderNextNode(template.Node):
 
     def render(self, context):
         name = self.name.resolve(context)
-        obj = context['iter']['next']()
+        obj = context['iter'].next()
         return render_model(obj, name, dictionary={}, context_instance=context)
 
 
@@ -131,7 +128,7 @@ class RenderRemainderNode(template.Node):
         result = []
         try:
             while True:
-                obj = context['iter']['next']()
+                obj = context['iter'].next()
                 result.append(render_model(obj,
                                            name,
                                            dictionary={},
