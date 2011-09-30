@@ -14,6 +14,8 @@ settings = {
         'armstrong.core.arm_layout.tests.arm_layout_support',
         'lettuce.django',
     ),
+    'SITE_ID': 1,
 }
 
-tested_apps = ("arm_layout", )
+main_app = "arm_layout"
+tested_apps = (main_app, )
