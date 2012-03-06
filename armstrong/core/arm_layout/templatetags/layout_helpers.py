@@ -1,13 +1,9 @@
 from django import template
 from django.template.base import TemplateSyntaxError
 
-from armstrong.utils.backends import GenericBackend
-
+from ..utils import render_model
 
 register = template.Library()
-
-render_model = GenericBackend('ARMSTRONG_LAYOUT_RENDER_METHOD',
-        defaults='armstrong.core.arm_layout.utils.render_model').get_backend
 
 
 class RenderObjectNode(template.Node):
@@ -148,3 +144,4 @@ def render_remainder(parser, token):
 
     message = "Too %s parameters" % ("many" if len(tokens) > 2 else "few")
     raise TemplateSyntaxError(message)
+
