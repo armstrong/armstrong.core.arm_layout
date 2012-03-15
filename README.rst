@@ -2,12 +2,14 @@ armstrong.core.arm_layout
 =========================
 Provides layout related code for use in Armstrong and Django projects.
 
+``arm_layout`` provides you with tools to help streamline displaying content
+from within your application.
+
 
 Usage
 -----
-You can use the ``layout_helpers`` template tags to streamline the code in use
-inside your templates.  To load them, add the following line (generally at the
-top of th file):
+To load the template tags, add the following line (generally at the top of your
+template):
 
 ::
 
