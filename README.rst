@@ -1,6 +1,6 @@
 armstrong.core.arm_layout
 =========================
-Provides layout related code for use in Armstrong and Django proejcts.
+Provides layout related code for use in Armstrong and Django projects.
 
 
 Usage
