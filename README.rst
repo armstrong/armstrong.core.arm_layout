@@ -1,57 +1,66 @@
 armstrong.core.arm_layout
 =========================
-Layout code related to Armstrong
-
-
-Installation
-------------
-
-::
-
-    name="armstrong.core.arm_layout"
-    pip install -e git://github.com/armstrong/$name#egg=$name
+Provides layout related code for use in Armstrong and Django proejcts.
 
 
 Usage
 -----
-First, make sure that ``armstrong.core.arm_layout`` is installed then add it to
-the ``INSTALLED_APPS`` list of your Django settings.  Next, inside any
-templates you want to use this in, add the following line (generally at the
-top of the file)::
+You can use the ``layout_helpers`` template tags to streamline the code in use
+inside your templates.  To load them, add the following line (generally at the
+top of th file):
+
+::
 
     {% load layout_helpers %}
 
-Now, you can use the ``{% render_model %}`` template tag to render any model
-like this::
+Once you have loaded the ``layout_helpers``, you can use the ``render_model``
+template tag to display a given model like this:
+
+::
 
     {% render_model some_model "full_page" %}
 
-Let's assume ``some_model`` is a model called ``Article`` that extends the
-model ``Content``.  These models are in ``armstrong.apps.articles`` and
-``armstrong.apps.content``, respectively.  This would attempt to load the
-following templates in your configured template directories::
+``some_model`` is a variable in your template that is a model instance and the
+string ``"full_page"`` is the name of your "layout".  ``render_model`` looks
+for a template named ``layouts/<app_label>/<model>/<layout>.html`` to determine
+what to use to display your model instance.
+
+``render_model`` goes one step further, however.  It is smart enough to walk
+through the inheritance of the model to determine if there are any other models
+that have the layout that could be used.  For example, if ``some_model`` was
+an instance of ``armstrong.apps.articles.models.Article`` which inherits from
+``armstrong.apps.content.models.Content``, ``render_model`` looks in the
+following templates:
+
+::
 
     ["layout/articles/article/full_page.html",
      "layout/content/content/full_page.html", ]
 
-These template names follow the pattern of
-``layout/<app_label>/<model_name>/<name>.html``.  ``armstrong.core.arm_layout``
-is currently concerned with HTML, so the ``html`` extension is the default.  It
-may be configurable in future releases.
+You have access to the entire template context inside the ``full_page.html``
+template.  You also have a new variable called ``object`` which represents the
+model instance that you provided to ``render_model``.  That variable is only
+available inside the layout template and temporarily overrides any context
+variable called ``object``.  Once ``render_model`` is finished, it restores the
+original context.
 
-The two parameters you provide ``render_model`` are a variable that represents
-a model and the name of the layout you want to use for that model.  The name
-can be either a string (surrounded by single or double quotation marks) or a
-variable to that can be resolved to a string.
 
-Inside the various ``full_page.html`` templates, you have access to the entire
-context of the calling template, plus a new variable called ``object`` that
-represents the model you passed in.
+Installation & Configuration
+----------------------------
+You can install the latest release of ``armstrong.core.arm_layout`` using `pip`_:
 
-.. note:: The ``object`` variable inside ``full_page.html`` is only available
-          inside the template.  Once ``render_model`` has finished, ``object``
-          is removed from the context.  Any variable called ``object`` in the
-          calling template is left untouched.
+::
+
+    pip install armstrong.core.arm_layout
+
+Make sure to add ``armstrong.core.arm_layout`` to your ``INSTALLED_APPS``.  You
+can add this however you like.  This works as a copy-and-paste solution:
+
+::
+
+	INSTALLED_APPS += ["armstrong.core.arm_layout", ]
+
+.. _pip: http://www.pip-installer.org/
 
 
 Contributing
