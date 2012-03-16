@@ -29,10 +29,10 @@ what to use to display your model instance.
 
 ``render_model`` goes one step further, however.  It is smart enough to walk
 through the inheritance of the model to determine if there are any other models
-that have the layout that could be used.  For example, if ``some_model`` was
+that have the layout that can be used.  For example, if ``some_model`` was
 an instance of ``armstrong.apps.articles.models.Article`` which inherits from
-``armstrong.apps.content.models.Content``, ``render_model`` looks in the
-following templates:
+``armstrong.apps.content.models.Content``, ``render_model`` looks for the
+following templates, in this order:
 
 ::
 
