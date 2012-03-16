@@ -24,7 +24,7 @@ template tag to display a given model like this:
 
 ``some_model`` is a variable in your template that is a model instance and the
 string ``"full_page"`` is the name of your "layout".  ``render_model`` looks
-for a template named ``layouts/<app_label>/<model>/<layout>.html`` to determine
+for a template named ``layout/<app_label>/<model>/<layout>.html`` to determine
 what to use to display your model instance.
 
 ``render_model`` goes one step further, however.  It is smart enough to walk
