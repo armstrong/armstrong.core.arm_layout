@@ -4,11 +4,6 @@ from django.template.loader import render_to_string
 from armstrong.utils.backends import GenericBackend
 
 
-template_finder = GenericBackend('ARMSTRONG_LAYOUT_TEMPLATE_FINDER',
-        defaults='armstrong.core.arm_layout.utils.get_layout_template_name')\
-        .get_backend
-
-
 def get_layout_template_name(model, name):
     ret = []
     for a in model.__class__.mro():
@@ -22,5 +17,5 @@ def get_layout_template_name(model, name):
 def render_model(object, name, dictionary=None, context_instance=None):
     dictionary = dictionary or {}
     dictionary["object"] = object
-    return mark_safe(render_to_string(template_finder(object, name),
+    return mark_safe(render_to_string(get_layout_template_name(object, name),
         dictionary=dictionary, context_instance=context_instance))
