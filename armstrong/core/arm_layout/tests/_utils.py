@@ -9,6 +9,7 @@ from fudge.inspector import arg
 
 from .arm_layout_support.models import Foobar
 from .. import utils
+from .. import backends
 
 
 def generate_random_model():
@@ -27,7 +28,7 @@ def contains_model(test_case, model):
 @contextmanager
 def stub_render_to_string():
     render_to_string = Fake().is_callable().returns("")
-    with patched_context(utils, "render_to_string",
+    with patched_context(backends, "render_to_string",
             render_to_string):
         yield
 

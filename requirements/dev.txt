@@ -1,3 +1,2 @@
--r ./base.txt
 armstrong.dev
 -e git://github.com/tswicegood/lettuce.git@fix-port-issues#egg=lettuce

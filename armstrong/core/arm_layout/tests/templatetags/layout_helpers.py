@@ -10,13 +10,15 @@ from ...templatetags import layout_helpers
 
 class RenderObjectNodeTestCase(LayoutHelperTestCase):
     def test_dispatches_to_get_layout_template_name(self):
+        # TODO: this is a brittle case -- refactor
         model = generate_random_model()
         random_name = '"%d"' % random.randint(100, 200)
         node = layout_helpers.RenderObjectNode("object", random_name)
 
         fake = Fake()
         fake.is_callable().with_args(model, random_name).expects_call()
-        with patched_context(utils, "get_layout_template_name", fake):
+        with patched_context(utils.render_model, "get_layout_template_name", 
+                fake):
             with stub_render_to_string():
                 node.render(Context({"object": model}))
 
@@ -67,7 +69,7 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
             render_to_string.with_args(arg.any(),
                     dictionary=contains_model(self, model),
                     context_instance=context)
-            with patched_context(utils, "render_to_string",
+            with patched_context(backends, "render_to_string",
                     render_to_string):
                 node = layout_helpers.RenderObjectNode("object", "'foobar'")
                 result = node.render(context)
@@ -80,7 +82,7 @@ class RenderObjectNodeTestCase(LayoutHelperTestCase):
             render_to_string.with_args(arg.any(),
                     dictionary=contains_model(self, model),
                     context_instance=context)
-            with patched_context(utils, "render_to_string",
+            with patched_context(backends, "render_to_string",
                     render_to_string):
                 node = layout_helpers.RenderObjectNode("list.0", "'foobar'")
                 result = node.render(context)
