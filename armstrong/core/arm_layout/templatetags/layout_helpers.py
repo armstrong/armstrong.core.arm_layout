@@ -1,8 +1,5 @@
-from contextlib import contextmanager
-import copy
 from django import template
-from django.template import RequestContext
-from django.template.base import TemplateSyntaxError, VariableDoesNotExist
+from django.template.base import TemplateSyntaxError
 
 from ..utils import render_model
 
