@@ -4,6 +4,6 @@
     "description": "Layout code related to Armstrong",
     "install_requires": [
         "Django==1.3.1",
-        "armstrong.utils.backends>=1.0.0"
+        "armstrong.utils.backends>=1.0.0,<2.0"
     ]
 }
