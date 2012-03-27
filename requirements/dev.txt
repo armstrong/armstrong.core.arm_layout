@@ -1,2 +1,2 @@
-armstrong.dev
+armstrong.dev>=1.12.1
 -e git://github.com/tswicegood/lettuce.git@fix-port-issues#egg=lettuce
