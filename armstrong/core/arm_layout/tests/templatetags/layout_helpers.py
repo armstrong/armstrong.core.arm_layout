@@ -205,7 +205,7 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
 
     @fudge.patch(
         'armstrong.core.arm_layout.utils.render_model.get_layout_template_name',
-        'armstrong.core.arm_layout.backends.render_to_string')
+        'armstrong.core.arm_layout.backends.basic.render_to_string')
     def test_dispatches_to_get_layout_template_name(self, fake_get_layout, fake_render):
         fake_get_layout.expects_call().with_args(self.model, 'tpl')
         fake_render.is_callable().returns("")  # prevent actual template file loading
