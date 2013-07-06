@@ -115,7 +115,7 @@ class render_modelTestCase(TestCase):
     def setUp(self):
         self.model = generate_random_model()
         self.string = ""
-        self.tpl_name = "full_page"
+        self.tpl_name = "full"
         self.context = Context({"object": self.model})
         self.expected_result = "Title: %s" % self.model.title
 
@@ -199,14 +199,14 @@ class render_listTestCase(TestCase):
 
     def test_filters_list_argument(self):
         string = """
-            {% load layout_helpers %}{% render_list list|slice:":3" "full_page" %}
+            {% load layout_helpers %}{% render_list list|slice:":3" "full" %}
         """.strip()
         model_list = [generate_random_model()
                         for i in range(random.randint(5, 10))]
         context = Context({"list": model_list})
         rendered = Template(string).render(context)
 
-        self.assertEqual(3, len(re.findall('Full Page', rendered)))
+        self.assertEqual(3, len(re.findall('Full - Title', rendered)))
         self.assertTrue(re.search('Title: %s' % model_list[0].title, rendered))
         self.assertTrue(re.search('Title: %s' % model_list[1].title, rendered))
         self.assertTrue(re.search('Title: %s' % model_list[2].title, rendered))
@@ -222,7 +222,7 @@ class RenderIterNodeTestCase(TestCase):
     def test_render_non_iterable(self):
         model = generate_random_model()
         nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
         node = RenderIterNode(Variable("list"), nodelist)
         with self.assertRaises(TypeError):
             node.render(Context({"list": model}))
@@ -230,7 +230,7 @@ class RenderIterNodeTestCase(TestCase):
     def test_render_one_element(self):
         model = generate_random_model()
         nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
         node = RenderIterNode(Variable("list"), nodelist)
         rendered = node.render(Context({"list": [model]}))
         self.assertTrue(re.search(model.title, rendered))
@@ -238,9 +238,9 @@ class RenderIterNodeTestCase(TestCase):
     def test_render_multiple_elements(self):
         models = [generate_random_model() for i in range(random.randint(5, 8))]
         nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
         nodelist.append(RenderNextNode("'mini'"))
-        nodelist.append(RenderNextNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
         node = RenderIterNode(Variable("list"), nodelist)
         rendered = node.render(Context({"list": models}))
         self.assertTrue(re.search(models[0].title, rendered))
@@ -251,8 +251,8 @@ class RenderIterNodeTestCase(TestCase):
     def test_render_multiple_elements_with_extra_nexts(self):
         models = [generate_random_model() for i in range(2)]
         nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full_page'"))
-        nodelist.append(RenderNextNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
+        nodelist.append(RenderNextNode("'full'"))
         nodelist.append(RenderNextNode("'mini'"))
         nodelist.append(RenderNextNode("'mini'"))
         node = RenderIterNode(Variable("list"), nodelist)
@@ -264,10 +264,10 @@ class RenderIterNodeTestCase(TestCase):
     def test_render_multiple_elements_with_remainder(self):
         models = [generate_random_model() for i in range(random.randint(5, 8))]
         nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
         nodelist.append(RenderNextNode("'mini'"))
-        nodelist.append(RenderNextNode("'full_page'"))
-        nodelist.append(RenderRemainderNode("'full_page'"))
+        nodelist.append(RenderNextNode("'full'"))
+        nodelist.append(RenderRemainderNode("'full'"))
         node = RenderIterNode(Variable("list"), nodelist)
         rendered = node.render(Context({"list": models}))
         self.assertTrue(re.search(models[0].title, rendered))
