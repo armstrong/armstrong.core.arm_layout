@@ -6,9 +6,8 @@ from fudge.inspector import arg
 from contextlib import contextmanager
 
 from django.template import (
-    Template, Context, RequestContext, NodeList, Variable,
+    Template, Context, NodeList, Variable,
     TemplateDoesNotExist, TemplateSyntaxError, VariableDoesNotExist)
-from django.test.client import RequestFactory
 
 from ..arm_layout_support.models import Foobar
 from ...templatetags.layout_helpers import (
@@ -42,7 +41,6 @@ def stub_get_layout_template_name():
 class RenderObjectNodeTestCase(TestCase):
     def setUp(self):
         super(RenderObjectNodeTestCase, self).setUp()
-        self.factory = RequestFactory()
         self.model = generate_random_model()
 
     def contains_model(self, model):
@@ -74,28 +72,6 @@ class RenderObjectNodeTestCase(TestCase):
                 node.render(Context({random_object_name: self.model}))
             except VariableDoesNotExist:
                 self.fail("should have found variable in context")
-
-    def test_passes_request_into_context_if_available(self):
-        request = self.factory.get("/")
-        node = RenderObjectNode("object", "'show_request'")
-        result = node.render(Context({"request": request, "object": self.model}))
-
-        self.assertRegexpMatches(result, "WSGIRequest")
-
-    def test_does_not_use_RequestContext_by_default(self):
-        node = RenderObjectNode("object", "'debug'")
-        with self.settings(DEBUG=False):
-            result = node.render(Context({"object": self.model}))
-            self.assertEqual(result.strip(), "debug: off")
-
-    def test_uses_RequestContext_if_request_provided(self):
-        request = self.factory.get("/")
-        node = RenderObjectNode("object", "'debug'")
-
-        with self.settings(DEBUG=True):
-            context = RequestContext(request, {"object": self.model})
-            result = node.render(context)
-            self.assertEqual(result.strip(), "debug: on")
 
     def test_object_is_provided_to_context(self):
         context = Context({"object": self.model})
@@ -263,7 +239,7 @@ class RenderIterNodeTestCase(TestCase):
         models = [generate_random_model() for i in range(random.randint(5, 8))]
         nodelist = NodeList()
         nodelist.append(RenderNextNode("'full_page'"))
-        nodelist.append(RenderNextNode("'show_request'"))
+        nodelist.append(RenderNextNode("'mini'"))
         nodelist.append(RenderNextNode("'full_page'"))
         node = RenderIterNode(Variable("list"), nodelist)
         rendered = node.render(Context({"list": models}))
@@ -277,19 +253,19 @@ class RenderIterNodeTestCase(TestCase):
         nodelist = NodeList()
         nodelist.append(RenderNextNode("'full_page'"))
         nodelist.append(RenderNextNode("'full_page'"))
-        nodelist.append(RenderNextNode("'show_request'"))
-        nodelist.append(RenderNextNode("'show_request'"))
+        nodelist.append(RenderNextNode("'mini'"))
+        nodelist.append(RenderNextNode("'mini'"))
         node = RenderIterNode(Variable("list"), nodelist)
         rendered = node.render(Context({"list": models}))
         self.assertTrue(re.search(models[0].title, rendered))
         self.assertTrue(re.search(models[1].title, rendered))
-        self.assertFalse(re.search('request', rendered))
+        self.assertFalse(re.search('mini', rendered))
 
     def test_render_multiple_elements_with_remainder(self):
         models = [generate_random_model() for i in range(random.randint(5, 8))]
         nodelist = NodeList()
         nodelist.append(RenderNextNode("'full_page'"))
-        nodelist.append(RenderNextNode("'show_request'"))
+        nodelist.append(RenderNextNode("'mini'"))
         nodelist.append(RenderNextNode("'full_page'"))
         nodelist.append(RenderRemainderNode("'full_page'"))
         node = RenderIterNode(Variable("list"), nodelist)
