@@ -38,7 +38,19 @@ def stub_get_layout_template_name():
         yield
 
 
-class RenderObjectNodeTestCase(TestCase):
+class RenderBaseTestCaseMixin(object):
+    def setUp(self):
+        self.string = ""
+        self.context = Context()
+
+    def tearDown(self):
+        # cache the rendered template result during a test run
+        if hasattr(self, '_rendered_template'):
+            del self._rendered_template
+
+
+
+class RenderObjectNodeTestCase(RenderBaseTestCaseMixin, TestCase):
     def setUp(self):
         super(RenderObjectNodeTestCase, self).setUp()
         self.model = generate_random_model()
@@ -111,7 +123,7 @@ class RenderObjectNodeTestCase(TestCase):
         self.assertEqual(Variable("object").resolve(context), obj)
 
 
-class render_modelTestCase(TestCase):
+class render_modelTestCase(RenderBaseTestCaseMixin, TestCase):
     def setUp(self):
         self.model = generate_random_model()
         self.string = ""
@@ -161,117 +173,122 @@ class render_modelTestCase(TestCase):
             self.rendered_template
 
 
-class RenderListNodeTestCase(TestCase):
+class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
+    @property
+    def rendered_template(self):
+        if not hasattr(self, '_rendered_template'):
+            template = "{% load layout_helpers %}" + self.string
+            self._rendered_template = Template(template).render(self.context)
+        return self._rendered_template
+
+    def test_renders_all_list_items(self):
+        models = [generate_random_model() for i in range(3)]
+
+        self.context['list'] = models
+        self.string = '{% render_list list "full" %}'
+
+        self.assertEqual(self.rendered_template.count('Full - Title'), 3)
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertTrue(models[1].title in self.rendered_template)
+        self.assertTrue(models[2].title in self.rendered_template)
+
     def test_variable_resolution_for_list(self):
-        random_list_name = "list_%d" % random.randint(100, 200)
-        rln = RenderListNode(Variable(random_list_name), "'debug'")
-        with stub_render_to_string():
-            try:
-                rln.render(Context({random_list_name: [generate_random_model()]}))
-            except VariableDoesNotExist:
-                self.fail("should have found variable in context")
-        fudge.verify()
+        random_list_var = "var_%d" % random.randint(100, 200)
+        models = [generate_random_model() for i in range(2)]
 
-    def test_variable_resolution_for_name(self):
-        random_name_name = "name_%d" % random.randint(100, 200)
-        rln = RenderListNode(Variable('list'), random_name_name)
-        with stub_render_to_string():
-            try:
-                rln.render(Context({'list': [generate_random_model()],
-                                    random_name_name: 'debug'}))
-            except VariableDoesNotExist:
-                self.fail("should have found variable in context")
-        fudge.verify()
+        self.context[random_list_var] = models
+        self.string = '{% render_list ' + random_list_var + ' "full" %}'
 
-    def test_finds_new_templates_for_each_model(self):
-        rln = RenderListNode(Variable('list'), "'debug'")
-        num_models = random.randint(5, 10)
-        with stub_render_to_string():
-            try:
-                rln.render(Context({'list': [generate_random_model()
-                    for i in range(num_models)]}))
-            except VariableDoesNotExist:
-                self.fail("should have found variable in context")
-        fudge.verify()
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertTrue(models[1].title in self.rendered_template)
 
+    def test_variable_resolution_for_template(self):
+        random_tpl_var = "name_%d" % random.randint(100, 200)
 
-class render_listTestCase(TestCase):
+        self.context['list'] = [generate_random_model() for i in range(2)]
+        self.string = '{% render_list list "' + random_tpl_var + '" %}'
+
+        with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
+            self.rendered_template
 
     def test_filters_list_argument(self):
-        string = """
-            {% load layout_helpers %}{% render_list list|slice:":3" "full" %}
-        """.strip()
-        model_list = [generate_random_model()
-                        for i in range(random.randint(5, 10))]
-        context = Context({"list": model_list})
-        rendered = Template(string).render(context)
+        models = [generate_random_model() for i in range(5)]
 
-        self.assertEqual(3, len(re.findall('Full - Title', rendered)))
-        self.assertTrue(re.search('Title: %s' % model_list[0].title, rendered))
-        self.assertTrue(re.search('Title: %s' % model_list[1].title, rendered))
-        self.assertTrue(re.search('Title: %s' % model_list[2].title, rendered))
-        self.assertFalse(re.search('Title: %s' % model_list[3].title, rendered))
+        self.context['list'] = models
+        self.string = '{% render_list list|slice:":2" "full" %}'
+
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertTrue(models[1].title in self.rendered_template)
+        self.assertFalse(models[2].title in self.rendered_template)
 
 
-class RenderIterNodeTestCase(TestCase):
+class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
+    @property
+    def rendered_template(self):
+        if not hasattr(self, '_rendered_template'):
+            template = ''.join([
+                "{% load layout_helpers %}",
+                "{% render_iter list %}",
+                self.string,
+                '{% endrender_iter %}'])
+            self._rendered_template = Template(template).render(self.context)
+        return self._rendered_template
+
     def test_render_empty_block(self):
-        node = RenderIterNode(Variable('list'), NodeList())
-        rendered = node.render(Context({'list': []}))
-        self.assertEqual("", rendered)
+        self.assertEqual(self.rendered_template, "")
 
-    def test_render_non_iterable(self):
-        model = generate_random_model()
-        nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full'"))
-        node = RenderIterNode(Variable("list"), nodelist)
+    def test_render_raises_exception_on_non_iterable(self):
+        self.context['list'] = None
+        self.string = '{% render_next "full" %}'
         with self.assertRaises(TypeError):
-            node.render(Context({"list": model}))
+            self.rendered_template
 
     def test_render_one_element(self):
         model = generate_random_model()
-        nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full'"))
-        node = RenderIterNode(Variable("list"), nodelist)
-        rendered = node.render(Context({"list": [model]}))
-        self.assertTrue(re.search(model.title, rendered))
+        self.context['list'] = [model]
+        self.string = '{% render_next "full" %}'
+        self.assertEqual('Full - Title: %s' % model.title, self.rendered_template)
 
     def test_render_multiple_elements(self):
-        models = [generate_random_model() for i in range(random.randint(5, 8))]
-        nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full'"))
-        nodelist.append(RenderNextNode("'mini'"))
-        nodelist.append(RenderNextNode("'full'"))
-        node = RenderIterNode(Variable("list"), nodelist)
-        rendered = node.render(Context({"list": models}))
-        self.assertTrue(re.search(models[0].title, rendered))
-        self.assertFalse(re.search(models[1].title, rendered))
-        self.assertTrue(re.search(models[2].title, rendered))
-        self.assertFalse(re.search(models[3].title, rendered))
+        models = [generate_random_model() for i in range(5)]
 
-    def test_render_multiple_elements_with_extra_nexts(self):
-        models = [generate_random_model() for i in range(2)]
-        nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full'"))
-        nodelist.append(RenderNextNode("'full'"))
-        nodelist.append(RenderNextNode("'mini'"))
-        nodelist.append(RenderNextNode("'mini'"))
-        node = RenderIterNode(Variable("list"), nodelist)
-        rendered = node.render(Context({"list": models}))
-        self.assertTrue(re.search(models[0].title, rendered))
-        self.assertTrue(re.search(models[1].title, rendered))
-        self.assertFalse(re.search('mini', rendered))
+        self.context['list'] = models
+        self.string = ''.join([
+            '{% render_next "full" %}',
+            '{% render_next "mini" %}',
+            '{% render_next "full" %}'])
+
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertFalse(models[1].title in self.rendered_template)
+        self.assertTrue(models[2].title in self.rendered_template)
+        self.assertFalse(models[3].title in self.rendered_template)
 
     def test_render_multiple_elements_with_remainder(self):
-        models = [generate_random_model() for i in range(random.randint(5, 8))]
-        nodelist = NodeList()
-        nodelist.append(RenderNextNode("'full'"))
-        nodelist.append(RenderNextNode("'mini'"))
-        nodelist.append(RenderNextNode("'full'"))
-        nodelist.append(RenderRemainderNode("'full'"))
-        node = RenderIterNode(Variable("list"), nodelist)
-        rendered = node.render(Context({"list": models}))
-        self.assertTrue(re.search(models[0].title, rendered))
-        self.assertFalse(re.search(models[1].title, rendered))
-        self.assertTrue(re.search(models[2].title, rendered))
+        models = [generate_random_model() for i in range(7)]
+
+        self.context['list'] = models
+        self.string = ''.join([
+            '{% render_next "full" %}',
+            '{% render_next "mini" %}',
+            '{% render_next "full" %}',
+            '{% render_remainder "full" %}'])
+
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertFalse(models[1].title in self.rendered_template)
+        self.assertTrue(models[2].title in self.rendered_template)
         for model in models[3:]:
-            self.assertTrue(re.search(model.title, rendered))
+            self.assertTrue(model.title in self.rendered_template)
+
+    def test_render_ignores_extras(self):
+        models = [generate_random_model() for i in range(2)]
+
+        self.context['list'] = models
+        self.string = ''.join([
+            '{% render_next "full" %}',
+            '{% render_next "full" %}',
+            '{% render_next "mini" %}',
+            '{% render_remainder "mini" %}'])
+
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertTrue(models[1].title in self.rendered_template)
+        self.assertFalse('mini' in self.rendered_template)
