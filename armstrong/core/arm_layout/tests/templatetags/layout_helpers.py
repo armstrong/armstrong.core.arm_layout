@@ -5,6 +5,7 @@ import fudge
 from fudge.inspector import arg
 from contextlib import contextmanager
 
+from django.conf import settings
 from django.template import (
     Template, Context, NodeList, Variable,
     TemplateDoesNotExist, TemplateSyntaxError, VariableDoesNotExist)
@@ -48,6 +49,16 @@ class RenderBaseTestCaseMixin(object):
         if hasattr(self, '_rendered_template'):
             del self._rendered_template
 
+    @classmethod
+    def setUpClass(cls):
+        """Set Template settings to known values"""
+        cls.old_td, settings.TEMPLATE_DEBUG = settings.TEMPLATE_DEBUG, False
+        cls.old_invalid, settings.TEMPLATE_STRING_IF_INVALID = settings.TEMPLATE_STRING_IF_INVALID, 'INVALID'
+
+    @classmethod
+    def tearDownClass(cls):
+        settings.TEMPLATE_DEBUG = cls.old_td
+        settings.TEMPLATE_STRING_IF_INVALID = cls.old_invalid
 
 
 class RenderObjectNodeTestCase(RenderBaseTestCaseMixin, TestCase):
