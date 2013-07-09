@@ -131,6 +131,15 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
             self._rendered_template = Template(template).render(self.context)
         return self._rendered_template
 
+    def test_render_empty_list(self):
+        self.assertEqual(self.rendered_template, "")
+
+    def test_render_raises_exception_on_non_iterable(self):
+        self.context['list'] = None
+        self.string = '{% render_list list "full" %}'
+        with self.assertRaises(TypeError):
+            self.rendered_template
+
     def test_renders_all_list_items(self):
         models = [generate_random_model() for i in range(3)]
 
@@ -173,12 +182,16 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
 
 
 class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
+    def setUp(self):
+        super(RenderIterTestCase, self).setUp()
+        self.variable_name = 'list'
+
     @property
     def rendered_template(self):
         if not hasattr(self, '_rendered_template'):
             template = ''.join([
                 "{% load layout_helpers %}",
-                "{% render_iter list %}",
+                "{% render_iter " + self.variable_name + " %}",
                 self.string,
                 '{% endrender_iter %}'])
             self._rendered_template = Template(template).render(self.context)
@@ -229,6 +242,13 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         for model in models[3:]:
             self.assertTrue(model.title in self.rendered_template)
 
+    def test_render_empty_list_ignores_extras(self):
+        self.context['list'] = []
+        self.string = ''.join([
+            '{% render_next "full" %}',
+            '{% render_remainder "mini" %}'])
+        self.assertEqual(self.rendered_template, "")
+
     def test_render_ignores_extras(self):
         models = [generate_random_model() for i in range(2)]
 
@@ -242,3 +262,30 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[0].title in self.rendered_template)
         self.assertTrue(models[1].title in self.rendered_template)
         self.assertFalse('mini' in self.rendered_template)
+
+    def test_iter_variable_resolution_for_list(self):
+        models = [generate_random_model()]
+
+        self.variable_name = "var_%d" % random.randint(100, 200)
+        self.context[self.variable_name] = models
+        self.string = '{% render_next "full" %}'
+
+        self.assertTrue(models[0].title in self.rendered_template)
+
+    def test_next_variable_resolution_for_template(self):
+        random_tpl_var = "name_%d" % random.randint(100, 200)
+
+        self.context['list'] = [generate_random_model() for i in range(2)]
+        self.string = '{% render_next "' + random_tpl_var + '" %}'
+
+        with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
+            self.rendered_template
+
+    def test_remainder_variable_resolution_for_template(self):
+        random_tpl_var = "name_%d" % random.randint(100, 200)
+
+        self.context['list'] = [generate_random_model() for i in range(2)]
+        self.string = '{% render_remainder "' + random_tpl_var + '" %}'
+
+        with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
+            self.rendered_template
