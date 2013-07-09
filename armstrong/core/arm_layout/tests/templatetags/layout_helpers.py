@@ -1,42 +1,17 @@
-import re
-import string
 import random
 import fudge
-from fudge.inspector import arg
-from contextlib import contextmanager
-
 from django.conf import settings
-from django.template import (
-    Template, Context, NodeList, Variable,
-    TemplateDoesNotExist, TemplateSyntaxError, VariableDoesNotExist)
+from django.test import signals
+from django.template import (Context, Template,
+    TemplateDoesNotExist, TemplateSyntaxError)
 
 from ..arm_layout_support.models import Foobar
-from ...templatetags.layout_helpers import (
-    RenderObjectNode, RenderListNode, RenderIterNode,
-    RenderNextNode, RenderRemainderNode)
-from ... import utils, backends
 from .._utils import TestCase
 
 
 def generate_random_model():
     random_title = "This is a random title %d" % random.randint(1000, 2000)
     return Foobar(title=random_title)
-
-
-@contextmanager
-def stub_render_to_string():
-    render_to_string = fudge.Fake().is_callable().returns("")
-    with fudge.patched_context(backends, "render_to_string",
-            render_to_string):
-        yield
-
-
-@contextmanager
-def stub_get_layout_template_name():
-    get_layout_template_name = fudge.Fake().is_callable().returns("")
-    with fudge.patched_context(utils.render_model, "get_layout_template_name",
-            get_layout_template_name):
-        yield
 
 
 class RenderBaseTestCaseMixin(object):
@@ -61,127 +36,91 @@ class RenderBaseTestCaseMixin(object):
         settings.TEMPLATE_STRING_IF_INVALID = cls.old_invalid
 
 
-class RenderObjectNodeTestCase(RenderBaseTestCaseMixin, TestCase):
+class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
     def setUp(self):
-        super(RenderObjectNodeTestCase, self).setUp()
+        super(RenderModelTestCase, self).setUp()
         self.model = generate_random_model()
-
-    def contains_model(self, model):
-        def test(value):
-            self.assertTrue("object" in value, msg="sanity check")
-            self.assertEqual(model, value["object"])
-            return True
-        return arg.passes_test(test)
-
-    def test_dispatches_to_get_layout_template_name(self):
-        random_name = '"%d"' % random.randint(100, 200)
-        node = RenderObjectNode("object", random_name)
-
-        fake = fudge.Fake()
-        fake.is_callable().with_args(self.model, random_name).expects_call()
-        with fudge.patched_context(utils.render_model,
-                "get_layout_template_name", fake):
-            with stub_render_to_string():
-                node.render(Context({"object": self.model}))
-
-        fudge.verify()
-
-    def test_uses_the_name_provided_to_init_to_lookup_model(self):
-        random_object_name = "foo_%d" % random.randint(100, 200)
-        node = RenderObjectNode(random_object_name, "'full_name'")
-
-        with stub_render_to_string():
-            try:
-                node.render(Context({random_object_name: self.model}))
-            except VariableDoesNotExist:
-                self.fail("should have found variable in context")
-
-    def test_object_is_provided_to_context(self):
-        context = Context({"object": self.model})
-
-        with stub_get_layout_template_name():
-            render_to_string = fudge.Fake().is_callable().expects_call()
-            node = RenderObjectNode("object", "'foobar'")
-            render_to_string.with_args(
-                arg.any(),
-                dictionary=self.contains_model(self.model),
-                context_instance=context)
-            with fudge.patched_context(backends, "render_to_string",
-                    render_to_string):
-                node.render(context)
-
-    def test_can_pull_object_out_of_complex_context(self):
-        context = Context({"list": [self.model]})
-        with stub_get_layout_template_name():
-            render_to_string = fudge.Fake().is_callable().expects_call()
-            node = RenderObjectNode("list.0", "'foobar'")
-            render_to_string.with_args(
-                arg.any(),
-                dictionary=self.contains_model(self.model),
-                context_instance=context)
-            with fudge.patched_context(backends, "render_to_string",
-                    render_to_string):
-                node.render(context)
-
-    def test_original_context_is_not_contaminated(self):
-        obj = object()
-        context = Context({"object": obj, "list": [self.model]})
-        self.assertEqual(Variable("object").resolve(context), obj,
-                msg="sanity check")
-        with stub_render_to_string():
-            node = RenderObjectNode("list.0", "'foobar'")
-            node.render(context)
-        self.assertEqual(Variable("object").resolve(context), obj)
-
-
-class render_modelTestCase(RenderBaseTestCaseMixin, TestCase):
-    def setUp(self):
-        self.model = generate_random_model()
-        self.string = ""
-        self.tpl_name = "full"
-        self.context = Context({"object": self.model})
-        self.expected_result = "Title: %s" % self.model.title
-
-    def make_str(self, str, **kwargs):
-        self.string = string.Template(str).substitute(**kwargs)
+        self.context['model_obj'] = self.model
+        self.expected_result = "Full - Title: %s" % self.model.title
 
     @property
     def rendered_template(self):
-        template = "{% load layout_helpers %}" + self.string
-        return Template(template).render(self.context)
+        if not hasattr(self, '_rendered_template'):
+            template = "{% load layout_helpers %}" + self.string
+            self._rendered_template = Template(template).render(self.context)
+        return self._rendered_template
 
-    def test_dispatches_to_RenderObjectNode(self):
-        self.make_str('{% render_model object "$tpl" %}', tpl=self.tpl_name)
-        self.assertTrue(self.expected_result in self.rendered_template)
+    def test_renders_object(self):
+        self.string = '{% render_model model_obj "full" %}'
+        self.assertEqual(self.expected_result, self.rendered_template)
 
     def test_raises_exception_on_too_many_parameters(self):
-        self.make_str('{% render_model object "$tpl" one_too_many %}', tpl=self.tpl_name)
+        self.string = '{% render_model model_obj "full" one_too_many %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
             self.rendered_template
 
     def test_raises_exception_on_too_few_parameters(self):
-        self.make_str('{% render_model object %}')
+        self.string = '{% render_model model_obj %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
             self.rendered_template
 
-    def test_evaluates_template_as_context_variable(self):
-        self.make_str('{% render_model object layout_var %}')
-        self.context["layout_var"] = self.tpl_name
-        self.assertTrue(self.expected_result in self.rendered_template)
-
-    def test_supports_single_quotes(self):
-        self.make_str("{% render_model object '$tpl' %}", tpl=self.tpl_name)
-        self.assertTrue(self.expected_result in self.rendered_template)
+    def test_variable_resolution_for_template(self):
+        self.string = '{% render_model model_obj layout_var %}'
+        self.context["layout_var"] = "full"
+        self.assertEqual(self.expected_result, self.rendered_template)
 
     def test_raises_exception_on_missing_template(self):
-        self.make_str('{% render_model object "missing" %}')
+        self.string = '{% render_model model_obj "missing" %}'
         with self.assertRaises(TemplateDoesNotExist):
             self.rendered_template
 
-    def test_raises_exception_on_missing_context_variable(self):
-        self.make_str('{% render_model object layout_var %}')
-        with self.assertRaises(VariableDoesNotExist):
-            self.rendered_template
+    @fudge.patch(
+        'armstrong.core.arm_layout.utils.render_model.get_layout_template_name',
+        'armstrong.core.arm_layout.backends.render_to_string')
+    def test_dispatches_to_get_layout_template_name(self, fake_get_layout, fake_render):
+        fake_get_layout.expects_call().with_args(self.model, 'tpl')
+        fake_render.is_callable().returns("")  # prevent actual template file loading
+
+        self.string = '{% render_model model_obj "tpl" %}'
+        self.rendered_template
+
+    def test_can_pull_object_out_of_complex_context(self):
+        self.context = Context(dict(list=[self.model]))
+        self.string = '{% render_model list.0 "full" %}'
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_rendered_context_sets_provided_obj_as_object_variable(self):
+        # Copying the capture technique used by django.test.client.request()
+        def on_template_render(signal, sender, template, context, **kwargs):
+            if template.name.endswith('full.html'):
+                self.assertTrue('object' in context)
+                self.assertEqual(self.model, context['object'])
+        signals.template_rendered.connect(on_template_render, dispatch_uid="template-render")
+
+        self.string = '{% render_model model_obj "full" %}'
+        try:
+            self.assertEqual(self.expected_result, self.rendered_template)
+        finally:
+            signals.template_rendered.disconnect(dispatch_uid="template-render")
+
+    def test_original_context_is_not_contaminated(self):
+        obj = fudge.Fake().expects_call().returns("object output!")
+        self.context['object'] = obj
+        self.string = '{% render_model model_obj "full" %} {{ object }}'
+        self.expected_result += ' object output!'
+
+        # Copying the capture technique used by django.test.client.request()
+        def on_template_render(signal, sender, template, context, **kwargs):
+            if not template.name.endswith('full.html'):
+                self.assertEqual(obj, context['object'])
+        signals.template_rendered.connect(on_template_render, dispatch_uid="template-render")
+
+        try:
+            self.assertEqual(self.expected_result, self.rendered_template)
+        finally:
+            signals.template_rendered.disconnect(dispatch_uid="template-render")
+
+        fudge.verify()
 
 
 class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
