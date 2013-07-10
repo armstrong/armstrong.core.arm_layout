@@ -54,14 +54,9 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
         self.string = '{% render_model model_obj "full" %}'
         self.assertEqual(self.expected_result, self.rendered_template)
 
-    def test_raises_exception_on_too_many_parameters(self):
-        self.string = '{% render_model model_obj "full" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
     def test_raises_exception_on_too_few_parameters(self):
         self.string = '{% render_model model_obj %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'takes at least two arguments'):
             self.rendered_template
 
     def test_variable_resolution_for_template(self):
