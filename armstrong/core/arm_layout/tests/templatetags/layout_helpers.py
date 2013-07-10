@@ -148,18 +148,6 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         with self.assertRaises(TypeError):
             self.rendered_template
 
-    def test_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
-        self.string = '{% render_list list "full" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
-    def test_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = [generate_random_model()]
-        self.string = '{% render_list list %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
-            self.rendered_template
-
     def test_renders_all_list_items(self):
         models = [generate_random_model() for i in range(3)]
 
@@ -236,30 +224,6 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         template = '{% load layout_helpers %}{% render_iter %}{% endrender_iter %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
             Template(template).render(self.context)
-
-    def test_next_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
-        self.string = '{% render_next "mini" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
-    def test_next_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = [generate_random_model()]
-        self.string = '{% render_next %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
-            self.rendered_template
-
-    def test_remainder_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
-        self.string = '{% render_remainder "mini" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
-    def test_remainder_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = [generate_random_model()]
-        self.string = '{% render_remainder %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
-            self.rendered_template
 
     def test_render_empty_block(self):
         self.assertEqual(self.rendered_template, "")

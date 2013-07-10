@@ -1,7 +1,7 @@
 from django import template
 from django.template.base import TemplateSyntaxError
 
-from ..utils import render_model
+from ..utils import render_model as render_model_backend
 
 register = template.Library()
 
@@ -14,7 +14,7 @@ class RenderObjectNode(template.Node):
     def render(self, context):
         name = self.name.resolve(context)
         obj = self.obj.resolve(context)
-        return render_model(obj, name, context_instance=context)
+        return render_model_backend(obj, name, context_instance=context)
 
 
 @register.tag(name="render_model")
@@ -30,31 +30,11 @@ def do_render_model(parser, token):
     raise TemplateSyntaxError(message)
 
 
-class RenderListNode(template.Node):
-    def __init__(self, obj_list, name):
-        self.obj_list = obj_list
-        self.name = name
-
-    def render(self, context):
-        name = self.name.resolve(context)
-        obj_list = self.obj_list.resolve(context)
-        return ''.join(render_model(obj,
-                                    name,
-                                    context_instance=context)
-                            for obj in obj_list)
-
-
-@register.tag(name="render_list")
-def do_render_list(parser, token):
-    tokens = token.split_contents()
-    if len(tokens) is 3:
-        _, obj_list, name = tokens
-        obj_list = parser.compile_filter(obj_list)
-        name = parser.compile_filter(name)
-        return RenderListNode(obj_list, name)
-
-    message = "Too %s parameters" % ("many" if len(tokens) > 3 else "few")
-    raise TemplateSyntaxError(message)
+@register.simple_tag(takes_context=True)
+def render_list(context, obj_list, template_name):
+    return ''.join(
+        render_model_backend(obj, template_name, context_instance=context)
+            for obj in obj_list)
 
 
 class RenderIterNode(template.Node):
@@ -90,51 +70,20 @@ def render_iter(parser, token):
     raise TemplateSyntaxError(message)
 
 
-class RenderNextNode(template.Node):
-    def __init__(self, name):
-        self.name = name
-
-    def render(self, context):
-        obj = context['iter'].next()
-        name = self.name.resolve(context)
-        return render_model(obj, name, context_instance=context)
+@register.simple_tag(takes_context=True)
+def render_next(context, template_name):
+    obj = context['iter'].next()
+    return render_model_backend(obj, template_name, context_instance=context)
 
 
-@register.tag
-def render_next(parser, token):
-    tokens = token.split_contents()
-    if len(tokens) is 2:
-        _, name = tokens
-        name = parser.compile_filter(name)
-        return RenderNextNode(name)
-
-    message = "Too %s parameters" % ("many" if len(tokens) > 2 else "few")
-    raise TemplateSyntaxError(message)
-
-
-class RenderRemainderNode(template.Node):
-    def __init__(self, name):
-        self.name = name
-
-    def render(self, context):
-        name = self.name.resolve(context)
-        result = []
-        try:
-            while True:
-                obj = context['iter'].next()
-                result.append(
-                    render_model(obj, name, context_instance=context))
-        except StopIteration:
-            return ''.join(result)
-
-
-@register.tag
-def render_remainder(parser, token):
-    tokens = token.split_contents()
-    if len(tokens) is 2:
-        _, name = tokens
-        name = parser.compile_filter(name)
-        return RenderRemainderNode(name)
-
-    message = "Too %s parameters" % ("many" if len(tokens) > 2 else "few")
-    raise TemplateSyntaxError(message)
+@register.simple_tag(takes_context=True)
+def render_remainder(context, template_name):
+    result = []
+    try:
+        while True:
+            obj = context['iter'].next()
+            result.append(
+                render_model_backend(obj, template_name, context_instance=context))
+    except StopIteration:
+        pass
+    return ''.join(result)
