@@ -1,5 +1,6 @@
 import random
 import fudge
+import django
 from django.conf import settings
 from django.test import signals
 from django.template import (Context, Template,
@@ -64,10 +65,19 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
         self.context["layout_var"] = "full"
         self.assertEqual(self.expected_result, self.rendered_template)
 
-    def test_raises_exception_on_missing_template(self):
+    def test_silent_return_on_missing_template(self):
         self.string = '{% render_model model_obj "missing" %}'
-        with self.assertRaises(TemplateDoesNotExist):
-            self.rendered_template
+        self.assertEqual(self.rendered_template, '')
+
+    def test_raises_exception_on_missing_template_with_template_debug(self):
+        self.string = '{% render_model model_obj "missing" %}'
+        with self.settings(TEMPLATE_DEBUG=True):
+            if django.VERSION < (1, 4):
+                with self.assertRaises(TemplateSyntaxError):
+                    self.rendered_template
+            else:
+                with self.assertRaises(TemplateDoesNotExist):
+                    self.rendered_template
 
     @fudge.patch(
         'armstrong.core.arm_layout.utils.render_model.get_layout_template_name',

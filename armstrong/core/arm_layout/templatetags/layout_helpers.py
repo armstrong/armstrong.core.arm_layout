@@ -1,3 +1,4 @@
+from django.conf import settings
 from django import template
 from django.template.defaulttags import token_kwargs
 from django.template.base import TemplateSyntaxError
@@ -26,9 +27,14 @@ class RenderObjectNode(template.Node):
         return output
 
     def render(self, context):
-        obj = self.obj.resolve(context)
-        template_name = self.template_name.resolve(context)
-        return self.render_template(obj, template_name, context)
+        try:
+            obj = self.obj.resolve(context)
+            template_name = self.template_name.resolve(context)
+            return self.render_template(obj, template_name, context)
+        except:
+            if settings.TEMPLATE_DEBUG:
+                raise
+            return ''
 
 
 @register.tag(name="render_model")
