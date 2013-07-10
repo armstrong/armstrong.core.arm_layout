@@ -7,22 +7,24 @@ register = template.Library()
 
 
 class RenderObjectNode(template.Node):
-    def __init__(self, object, name):
-        self.object = template.Variable(object)
-        self.name = template.Variable(name)
+    def __init__(self, obj, name):
+        self.obj = obj
+        self.name = name
 
     def render(self, context):
         name = self.name.resolve(context)
-        object = self.object.resolve(context)
-        return render_model(object, name, context_instance=context)
+        obj = self.obj.resolve(context)
+        return render_model(obj, name, context_instance=context)
 
 
 @register.tag(name="render_model")
 def do_render_model(parser, token):
     tokens = token.split_contents()
     if len(tokens) is 3:
-        _, object, name = tokens
-        return RenderObjectNode(object, name)
+        _, obj, name = tokens
+        obj = parser.compile_filter(obj)
+        name = parser.compile_filter(name)
+        return RenderObjectNode(obj, name)
 
     message = "Too %s parameters" % ("many" if len(tokens) > 3 else "few")
     raise TemplateSyntaxError(message)
@@ -31,7 +33,7 @@ def do_render_model(parser, token):
 class RenderListNode(template.Node):
     def __init__(self, obj_list, name):
         self.obj_list = obj_list
-        self.name = template.Variable(name)
+        self.name = name
 
     def render(self, context):
         name = self.name.resolve(context)
@@ -48,6 +50,7 @@ def do_render_list(parser, token):
     if len(tokens) is 3:
         _, obj_list, name = tokens
         obj_list = parser.compile_filter(obj_list)
+        name = parser.compile_filter(name)
         return RenderListNode(obj_list, name)
 
     message = "Too %s parameters" % ("many" if len(tokens) > 3 else "few")
@@ -89,7 +92,7 @@ def render_iter(parser, token):
 
 class RenderNextNode(template.Node):
     def __init__(self, name):
-        self.name = template.Variable(name)
+        self.name = name
 
     def render(self, context):
         obj = context['iter'].next()
@@ -102,6 +105,7 @@ def render_next(parser, token):
     tokens = token.split_contents()
     if len(tokens) is 2:
         _, name = tokens
+        name = parser.compile_filter(name)
         return RenderNextNode(name)
 
     message = "Too %s parameters" % ("many" if len(tokens) > 2 else "few")
@@ -110,7 +114,7 @@ def render_next(parser, token):
 
 class RenderRemainderNode(template.Node):
     def __init__(self, name):
-        self.name = template.Variable(name)
+        self.name = name
 
     def render(self, context):
         name = self.name.resolve(context)
@@ -129,6 +133,7 @@ def render_remainder(parser, token):
     tokens = token.split_contents()
     if len(tokens) is 2:
         _, name = tokens
+        name = parser.compile_filter(name)
         return RenderRemainderNode(name)
 
     message = "Too %s parameters" % ("many" if len(tokens) > 2 else "few")
