@@ -122,6 +122,14 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
 
         fudge.verify()
 
+    def test_filters_work_on_obj_argument(self):
+        self.string = '{% render_model model_obj|default:"nothing" "full" %}'
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_filters_work_on_template_argument(self):
+        self.string = '{% render_model model_obj "full_extra"|slice:":4" %}'
+        self.assertEqual(self.expected_result, self.rendered_template)
+
 
 class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
     @property
@@ -182,7 +190,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
 
-    def test_filters_list_argument(self):
+    def test_filters_work_on_list_argument(self):
         models = [generate_random_model() for i in range(5)]
 
         self.context['list'] = models
@@ -191,6 +199,15 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[0].title in self.rendered_template)
         self.assertTrue(models[1].title in self.rendered_template)
         self.assertFalse(models[2].title in self.rendered_template)
+
+    def test_filters_work_on_template_argument(self):
+        models = [generate_random_model() for i in range(2)]
+
+        self.context['list'] = models
+        self.string = '{% render_list list "full_extra"|slice:":4" %}'
+
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertTrue(models[1].title in self.rendered_template)
 
 
 class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
@@ -336,3 +353,24 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
 
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
+
+    def test_filters_work_on_list_argument(self):
+        models = [generate_random_model() for i in range(2)]
+
+        self.context['list'] = models
+        self.string = '{% render_remainder "full" %}'
+
+        self.variable_name = 'list|slice:":1"'
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertFalse(models[1].title in self.rendered_template)
+
+    def test_filters_work_on_template_argument(self):
+        models = [generate_random_model() for i in range(2)]
+
+        self.context['list'] = models
+        self.string = ''.join([
+            '{% render_next "full_extra"|slice:":4" %}',
+            '{% render_remainder "mini_extra"|slice:":4" %}'])
+
+        self.assertTrue(models[0].title in self.rendered_template)
+        self.assertTrue('mini' in self.rendered_template)
