@@ -9,16 +9,12 @@ from within your application.
 Usage
 -----
 To load the template tags, add the following line (generally at the top of your
-template):
-
-::
+template)::
 
     {% load layout_helpers %}
 
 Once you have loaded the ``layout_helpers``, you can use the ``render_model``
-template tag to display a given model like this:
-
-::
+template tag to display a given model like this::
 
     {% render_model some_model "full_page" %}
 
@@ -32,9 +28,7 @@ through the inheritance of the model to determine if there are any other models
 that have the layout that can be used.  For example, if ``some_model`` was
 an instance of ``armstrong.apps.articles.models.Article`` which inherits from
 ``armstrong.apps.content.models.Content``, ``render_model`` looks for the
-following templates, in this order:
-
-::
+following templates, in this order::
 
     ["layout/articles/article/full_page.html",
      "layout/content/content/full_page.html", ]
@@ -49,20 +43,9 @@ original context.
 
 Installation & Configuration
 ----------------------------
-You can install the latest release of ``armstrong.core.arm_layout`` using `pip`_:
+#. ``pip install armstrong.core.arm_layout``
 
-::
-
-    pip install armstrong.core.arm_layout
-
-Make sure to add ``armstrong.core.arm_layout`` to your ``INSTALLED_APPS``.  You
-can add this however you like.  This works as a copy-and-paste solution:
-
-::
-
-	INSTALLED_APPS += ["armstrong.core.arm_layout", ]
-
-.. _pip: http://www.pip-installer.org/
+#. Add ``armstrong.core.arm_layout`` to your ``INSTALLED_APPS``
 
 
 Contributing
@@ -83,16 +66,16 @@ State of Project
 ----------------
 Armstrong is an open-source news platform that is freely available to any
 organization.  It is the result of a collaboration between the `Texas Tribune`_
-and `Bay Citizen`_, and a grant from the `John S. and James L. Knight
-Foundation`_.
+and `The Center for Investigative Reporting`_ and a grant from the
+`John S. and James L. Knight Foundation`_.
 
 To follow development, be sure to join the `Google Group`_.
 
-``armstrong.core.arm_layouts`` is part of the `Armstrong`_ project.  You're
+``armstrong.core.arm_layout`` is part of the `Armstrong`_ project.  You're
 probably looking for that.
 
 .. _Texas Tribune: http://www.texastribune.org/
-.. _Bay Citizen: http://www.baycitizen.org/
+.. _The Center for Investigative Reporting: http://cironline.org/
 .. _John S. and James L. Knight Foundation: http://www.knightfoundation.org/
 .. _Google Group: http://groups.google.com/group/armstrongcms
 .. _Armstrong: http://www.armstrongcms.org/
@@ -100,7 +83,7 @@ probably looking for that.
 
 License
 -------
-Copyright 2011-2012 Bay Citizen and Texas Tribune
+Copyright 2011-2013 Texas Tribune and The Center for Investigative Reporting
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
