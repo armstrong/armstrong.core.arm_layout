@@ -11,8 +11,7 @@ settings = {
         'django.contrib.sessions',
         'django.contrib.sites',
         'armstrong.core.arm_layout',
-        'armstrong.core.arm_layout.tests.arm_layout_support',
-        'lettuce.django',
+        'armstrong.core.arm_layout.tests.arm_layout_support'
     ),
     'SITE_ID': 1,
 }
