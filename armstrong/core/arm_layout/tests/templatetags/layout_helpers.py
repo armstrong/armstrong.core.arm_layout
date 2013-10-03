@@ -1,5 +1,7 @@
 import random
 import fudge
+import django
+import unittest
 from django.conf import settings
 from django.test import signals
 from django.template import (Context, Template,
@@ -12,6 +14,17 @@ from .._utils import TestCase
 def generate_random_model():
     random_title = "This is a random title %d" % random.randint(1000, 2000)
     return Foobar(title=random_title)
+
+
+def expectedFailureIf(condition):
+    """
+    Marks a test as an expected failure if ``condition`` is met.
+    code from Django 1.6 :: https://github.com/django/django/commit/a7dc13ec231faf917c3125eb4c158138d4edde10
+
+    """
+    if condition:
+        return unittest.expectedFailure
+    return lambda func: func
 
 
 class RenderBaseTestCaseMixin(object):
@@ -178,6 +191,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
 
+    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_list_argument(self):
         models = [generate_random_model() for i in range(5)]
 
@@ -188,6 +202,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[1].title in self.rendered_template)
         self.assertFalse(models[2].title in self.rendered_template)
 
+    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_template_argument(self):
         models = [generate_random_model() for i in range(2)]
 
@@ -328,6 +343,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[0].title in self.rendered_template)
         self.assertFalse(models[1].title in self.rendered_template)
 
+    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_template_argument(self):
         models = [generate_random_model() for i in range(2)]
 
