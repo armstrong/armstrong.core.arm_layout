@@ -9,9 +9,14 @@ from ..arm_layout_support.models import Foobar
 from .._utils import TestCase
 
 
-def generate_random_model():
-    random_title = "This is a random title %d" % random.randint(1000, 2000)
-    return Foobar(title=random_title)
+def generate_random_models(count):
+    """Generator to create ``count`` number of unique random models"""
+
+    num = random.randint(1000, 2000)
+    while count > 0:
+        yield Foobar(title="This is a random title %d" % num)
+        num += random.randint(2, 20)
+        count -= 1
 
 
 class RenderBaseTestCaseMixin(object):
@@ -39,7 +44,7 @@ class RenderBaseTestCaseMixin(object):
 class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
     def setUp(self):
         super(RenderModelTestCase, self).setUp()
-        self.model = generate_random_model()
+        self.model = next(generate_random_models(1))
         self.context['model_obj'] = self.model
         self.expected_result = "Full - Title: %s" % self.model.title
 
@@ -149,19 +154,19 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
             self.rendered_template
 
     def test_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         self.string = '{% render_list list "full" one_too_many %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
             self.rendered_template
 
     def test_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         self.string = '{% render_list list %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
             self.rendered_template
 
     def test_renders_all_list_items(self):
-        models = [generate_random_model() for i in range(3)]
+        models = list(generate_random_models(3))
 
         self.context['list'] = models
         self.string = '{% render_list list "full" %}'
@@ -173,7 +178,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
 
     def test_variable_resolution_for_list(self):
         random_list_var = "var_%d" % random.randint(100, 200)
-        models = [generate_random_model() for i in range(2)]
+        models = list(generate_random_models(2))
 
         self.context[random_list_var] = models
         self.string = '{% render_list ' + random_list_var + ' "full" %}'
@@ -184,14 +189,14 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
     def test_variable_resolution_for_template(self):
         random_tpl_var = "name_%d" % random.randint(100, 200)
 
-        self.context['list'] = [generate_random_model() for i in range(2)]
+        self.context['list'] = list(generate_random_models(2))
         self.string = '{% render_list list "' + random_tpl_var + '" %}'
 
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
 
     def test_filters_work_on_list_argument(self):
-        models = [generate_random_model() for i in range(5)]
+        models = list(generate_random_models(5))
 
         self.context['list'] = models
         self.string = '{% render_list list|slice:":2" "full" %}'
@@ -201,7 +206,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertFalse(models[2].title in self.rendered_template)
 
     def test_filters_work_on_template_argument(self):
-        models = [generate_random_model() for i in range(2)]
+        models = list(generate_random_models(2))
 
         self.context['list'] = models
         self.string = '{% render_list list "full_extra"|slice:":4" %}'
@@ -227,7 +232,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         return self._rendered_template
 
     def test_iter_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         template = '{% load layout_helpers %}{% render_iter list one_too_many %}{% endrender_iter %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
             Template(template).render(self.context)
@@ -238,25 +243,25 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
             Template(template).render(self.context)
 
     def test_next_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         self.string = '{% render_next "mini" one_too_many %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
             self.rendered_template
 
     def test_next_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         self.string = '{% render_next %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
             self.rendered_template
 
     def test_remainder_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         self.string = '{% render_remainder "mini" one_too_many %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
             self.rendered_template
 
     def test_remainder_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = [generate_random_model()]
+        self.context['list'] = list(generate_random_models(1))
         self.string = '{% render_remainder %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
             self.rendered_template
@@ -271,13 +276,13 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
             self.rendered_template
 
     def test_render_one_element(self):
-        model = generate_random_model()
+        model = next(generate_random_models(1))
         self.context['list'] = [model]
         self.string = '{% render_next "full" %}'
         self.assertEqual('Full - Title: %s' % model.title, self.rendered_template)
 
     def test_render_multiple_elements(self):
-        models = [generate_random_model() for i in range(5)]
+        models = list(generate_random_models(5))
 
         self.context['list'] = models
         self.string = ''.join([
@@ -291,7 +296,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertFalse(models[3].title in self.rendered_template)
 
     def test_render_multiple_elements_with_remainder(self):
-        models = [generate_random_model() for i in range(7)]
+        models = list(generate_random_models(7))
 
         self.context['list'] = models
         self.string = ''.join([
@@ -314,7 +319,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertEqual(self.rendered_template, "")
 
     def test_render_ignores_extras(self):
-        models = [generate_random_model() for i in range(2)]
+        models = list(generate_random_models(2))
 
         self.context['list'] = models
         self.string = ''.join([
@@ -328,7 +333,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertFalse('mini' in self.rendered_template)
 
     def test_iter_variable_resolution_for_list(self):
-        models = [generate_random_model()]
+        models = list(generate_random_models(1))
 
         self.variable_name = "var_%d" % random.randint(100, 200)
         self.context[self.variable_name] = models
@@ -339,7 +344,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
     def test_next_variable_resolution_for_template(self):
         random_tpl_var = "name_%d" % random.randint(100, 200)
 
-        self.context['list'] = [generate_random_model() for i in range(2)]
+        self.context['list'] = list(generate_random_models(2))
         self.string = '{% render_next "' + random_tpl_var + '" %}'
 
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
@@ -348,14 +353,14 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
     def test_remainder_variable_resolution_for_template(self):
         random_tpl_var = "name_%d" % random.randint(100, 200)
 
-        self.context['list'] = [generate_random_model() for i in range(2)]
+        self.context['list'] = list(generate_random_models(2))
         self.string = '{% render_remainder "' + random_tpl_var + '" %}'
 
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
 
     def test_filters_work_on_list_argument(self):
-        models = [generate_random_model() for i in range(2)]
+        models = list(generate_random_models(2))
 
         self.context['list'] = models
         self.string = '{% render_remainder "full" %}'
@@ -365,7 +370,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertFalse(models[1].title in self.rendered_template)
 
     def test_filters_work_on_template_argument(self):
-        models = [generate_random_model() for i in range(2)]
+        models = list(generate_random_models(2))
 
         self.context['list'] = models
         self.string = ''.join([
