@@ -1,5 +1,7 @@
 import random
 import fudge
+import django
+import unittest
 from django.conf import settings
 from django.test import signals
 from django.template import (Context, Template,
@@ -17,6 +19,17 @@ def generate_random_models(count):
         yield Foobar(title="This is a random title %d" % num)
         num += random.randint(2, 20)
         count -= 1
+
+
+def expectedFailureIf(condition):
+    """
+    Marks a test as an expected failure if ``condition`` is met.
+    code from Django 1.6 :: https://github.com/django/django/commit/a7dc13ec231faf917c3125eb4c158138d4edde10
+
+    """
+    if condition:
+        return unittest.expectedFailure
+    return lambda func: func
 
 
 class RenderBaseTestCaseMixin(object):
@@ -153,18 +166,6 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         with self.assertRaises(TypeError):
             self.rendered_template
 
-    def test_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = list(generate_random_models(1))
-        self.string = '{% render_list list "full" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
-    def test_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = list(generate_random_models(1))
-        self.string = '{% render_list list %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
-            self.rendered_template
-
     def test_renders_all_list_items(self):
         models = list(generate_random_models(3))
 
@@ -195,6 +196,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
 
+    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_list_argument(self):
         models = list(generate_random_models(5))
 
@@ -205,6 +207,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[1].title in self.rendered_template)
         self.assertFalse(models[2].title in self.rendered_template)
 
+    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_template_argument(self):
         models = list(generate_random_models(2))
 
@@ -241,30 +244,6 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         template = '{% load layout_helpers %}{% render_iter %}{% endrender_iter %}'
         with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
             Template(template).render(self.context)
-
-    def test_next_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = list(generate_random_models(1))
-        self.string = '{% render_next "mini" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
-    def test_next_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = list(generate_random_models(1))
-        self.string = '{% render_next %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
-            self.rendered_template
-
-    def test_remainder_raises_exception_on_too_many_parameters(self):
-        self.context['list'] = list(generate_random_models(1))
-        self.string = '{% render_remainder "mini" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
-    def test_remainder_raises_exception_on_too_few_parameters(self):
-        self.context['list'] = list(generate_random_models(1))
-        self.string = '{% render_remainder %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
-            self.rendered_template
 
     def test_render_empty_block(self):
         self.assertEqual(self.rendered_template, "")
@@ -369,6 +348,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[0].title in self.rendered_template)
         self.assertFalse(models[1].title in self.rendered_template)
 
+    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_template_argument(self):
         models = list(generate_random_models(2))
 
