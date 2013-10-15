@@ -1,7 +1,8 @@
 import random
 import fudge
-import django
 import unittest
+
+import django
 from django.conf import settings
 from django.test import signals
 from django.template import (Context, Template,
@@ -72,25 +73,131 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
         self.string = '{% render_model model_obj "full" %}'
         self.assertEqual(self.expected_result, self.rendered_template)
 
-    def test_raises_exception_on_too_many_parameters(self):
-        self.string = '{% render_model model_obj "full" one_too_many %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too many parameters"):
-            self.rendered_template
-
     def test_raises_exception_on_too_few_parameters(self):
         self.string = '{% render_model model_obj %}'
-        with self.assertRaisesRegexp(TemplateSyntaxError, "Too few parameters"):
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'takes at least two arguments'):
             self.rendered_template
+
+    def test_raises_exception_on_incorrect_third_parameter(self):
+        self.string = '{% render_model model_obj "expanded" badarg %}'
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'Unknown argument'):
+            self.rendered_template
+
+    def test_raises_exception_on_params_without_with(self):
+        self.string = '{% render_model model_obj "expanded" bad="pair" %}'
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'Unknown argument'):
+            self.rendered_template
+
+    def test_with_requires_params(self):
+        self.string = '{% render_model model_obj "expanded" with %}'
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'needs at least one keyword argument'):
+            self.rendered_template
+
+    def test_with_requires_key_value_pairs_01(self):
+        self.string = '{% render_model model_obj "expanded" with "no key" %}'
+        with self.assertRaises(TemplateSyntaxError):
+            self.rendered_template
+
+    def test_with_requires_key_value_pairs_02(self):
+        self.string = '{% render_model model_obj "expanded" with model_obj %}'
+        with self.assertRaises(TemplateSyntaxError):
+            self.rendered_template
+
+    def test_with_requires_a_simple_key(self):
+        self.string = '{% render_model model_obj "expanded" with dotted.arg="error" %}'
+        with self.assertRaises(TemplateSyntaxError):
+            self.rendered_template
+
+    def test_with_one_param(self):
+        self.context['second'] = 2
+        self.string = '{% render_model model_obj "expanded" with first=1 %}'
+        self.expected_result += "--12"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_with_two_params(self):
+        self.string = '{% render_model model_obj "expanded" with first=1 second="2" %}'
+        self.expected_result += "--12"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_with_extra_params(self):
+        self.string = '{% render_model model_obj "expanded" with first=1 second="2" third="unused" %}'
+        self.expected_result += "--12"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_with_can_assign_another_variable(self):
+        self.context['var'] = "test"
+        self.string = '{% render_model model_obj "expanded" with first=1 second=var %}'
+        self.expected_result += "--1test"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_with_filters_work_on_params(self):
+        self.string = '{% render_model model_obj "expanded" with first="a"|upper second="b"|upper|lower %}'
+        self.expected_result += "--Ab"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_only_isolates_context_but_keeps_object(self):
+        self.context['first'] = 1
+        self.string = '{% render_model model_obj "expanded" only %}'
+        self.expected_result += "--INVALIDINVALID"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_only_can_come_first(self):
+        self.string = '{% render_model model_obj "expanded" only with first=1 %}'
+        self.expected_result += "--1INVALID"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_only_can_go_last(self):
+        self.string = '{% render_model model_obj "expanded" with second=2 first=1 only %}'
+        self.expected_result += "--12"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_raises_exception_if_only_has_params_but_not_with(self):
+        self.string = '{% render_model model_obj "expanded" only needs="with" %}'
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'Unknown argument'):
+            self.rendered_template
+
+    def test_duplicate_with_raises_exception(self):
+        self.string = '{% render_model model_obj "expanded" with first=1 with %}'
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'specified more than once'):
+            self.rendered_template
+
+    def test_duplicate_only_raises_exception(self):
+        self.string = '{% render_model model_obj "expanded" only only %}'
+        with self.assertRaisesRegexp(TemplateSyntaxError, 'specified more than once'):
+            self.rendered_template
+
+    def test_autoescape_works(self):
+        self.context['var'] = "&"
+        self.context['second'] = "<"
+        self.string = '{% render_model model_obj "expanded" with first=var %}'
+        self.expected_result += "--&amp;&lt;"
+        self.assertEqual(self.expected_result, self.rendered_template)
+
+    def test_autoescape_off_works(self):
+        self.context['var'] = "&"
+        self.context['second'] = "<"
+        self.string = '{% autoescape off %}{% render_model model_obj "expanded" with first=var %}{% endautoescape %}'
+        self.expected_result += "--&<"
+        self.assertEqual(self.expected_result, self.rendered_template)
 
     def test_variable_resolution_for_template(self):
         self.string = '{% render_model model_obj layout_var %}'
         self.context["layout_var"] = "full"
         self.assertEqual(self.expected_result, self.rendered_template)
 
-    def test_raises_exception_on_missing_template(self):
+    def test_silent_return_on_missing_template(self):
         self.string = '{% render_model model_obj "missing" %}'
-        with self.assertRaises(TemplateDoesNotExist):
-            self.rendered_template
+        self.assertEqual(self.rendered_template, '')
+
+    def test_raises_exception_on_missing_template_with_template_debug(self):
+        self.string = '{% render_model model_obj "missing" %}'
+        with self.settings(TEMPLATE_DEBUG=True):
+            if django.VERSION < (1, 4):
+                with self.assertRaises(TemplateSyntaxError):
+                    self.rendered_template
+            else:
+                with self.assertRaises(TemplateDoesNotExist):
+                    self.rendered_template
 
     @fudge.patch(
         'armstrong.core.arm_layout.utils.render_model.get_layout_template_name',
