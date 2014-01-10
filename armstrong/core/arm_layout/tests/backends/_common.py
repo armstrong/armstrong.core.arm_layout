@@ -1,5 +1,6 @@
 import abc
 import random
+import fudge
 
 from ..arm_layout_support.models import Foobar, SubFoobar
 
@@ -35,6 +36,16 @@ class BackendTestCaseMixin(object):
     def test_returns_proper_path(self):
         result = self.backend.get_layout_template_name(self.m, self.name)
         expected = 'layout/%s/%s/%s.html' % \
+            (self.m._meta.app_label,
+             self.m._meta.object_name.lower(),
+             self.name)
+        self.assertEqual([expected], result)
+
+    def test_renderer_can_specify_base_path(self):
+        with fudge.patched_context(self.backend, "base_layout_directory", "different"):
+            result = self.backend.get_layout_template_name(self.m, self.name)
+
+        expected = 'different/%s/%s/%s.html' % \
             (self.m._meta.app_label,
              self.m._meta.object_name.lower(),
              self.name)
