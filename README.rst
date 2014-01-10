@@ -103,6 +103,12 @@ Installation & Configuration
 
 #. Add ``armstrong.core.arm_layout`` to your ``INSTALLED_APPS``
 
+! Deprecations !
+""""""""""""""""
+
+``ARMSTRONG_RENDER_MODEL_BACKEND`` is now ``ARMSTRONG_LAYOUT_BACKEND``
+  The new setting better indicates which Armstrong component it belongs to.
+
 
 Contributing
 ------------
