@@ -6,14 +6,14 @@ NEW = "ARMSTRONG_LAYOUT_BACKEND"
 OLD = "ARMSTRONG_RENDER_MODEL_BACKEND"
 
 render_model = (GenericBackend(NEW,
-        defaults="armstrong.core.arm_layout.backends.BasicRenderModelBackend")
+        defaults="armstrong.core.arm_layout.backends.BasicLayoutBackend")
     .get_backend())
 
 if hasattr(settings, OLD):
     msg = "{} is deprecated and will be removed in ArmLayout 1.4. Use {}.".format(OLD, NEW)
     warnings.warn(msg, DeprecationWarning)
     render_model = (GenericBackend(OLD,
-        defaults="armstrong.core.arm_layout.backends.BasicRenderModelBackend")
+        defaults="armstrong.core.arm_layout.backends.BasicLayoutBackend")
     .get_backend())
 
 

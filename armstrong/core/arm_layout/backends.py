@@ -1,7 +1,8 @@
 from django.utils.safestring import mark_safe
 from django.template.loader import render_to_string
 
-class BasicRenderModelBackend(object):
+
+class BasicLayoutBackend(object):
     def get_layout_template_name(self, model, name):
         ret = []
         for a in model.__class__.mro():
@@ -23,4 +24,14 @@ class BasicRenderModelBackend(object):
         return self.render(*args, **kwargs)
 
 
+# DEPRECATED: To be removed in ArmLayout 1.4.
+import warnings
 
+def deprecate(cls):
+    def wrapper(*args, **kwargs):
+        msg = "BasicRenderModelBackend is deprecated and will be removed in ArmLayout 1.4. Use BasicLayoutBackend."
+        warnings.warn(msg.format(cls.__name__), DeprecationWarning)
+        return cls(*args, **kwargs)
+    return wrapper
+
+BasicRenderModelBackend = deprecate(BasicLayoutBackend)

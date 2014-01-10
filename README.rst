@@ -103,8 +103,19 @@ Installation & Configuration
 
 #. Add ``armstrong.core.arm_layout`` to your ``INSTALLED_APPS``
 
+**Optional Setting:** (Used in ``settings.py`` and safe to omit)
+
+``ARMSTRONG_LAYOUT_BACKEND = "armstrong.core.arm_layout.backends.BasicLayoutBackend"``
+  Backends specify how the template tags actually determine template paths.
+  At the moment there is only one option--``BasicLayoutBackend``. Feel free
+  to write your own backend if you need other functionality.
+
 ! Deprecations !
 """"""""""""""""
+
+``BasicRenderModelBackend`` is now ``BasicLayoutBackend``
+  The new name better reflects the Armstrong component and its purpose.
+  The "render_model" name is more of a template tag implementation detail.
 
 ``ARMSTRONG_RENDER_MODEL_BACKEND`` is now ``ARMSTRONG_LAYOUT_BACKEND``
   The new setting better indicates which Armstrong component it belongs to.
