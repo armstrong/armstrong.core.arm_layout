@@ -10,7 +10,7 @@ render_model = (GenericBackend(NEW,
     .get_backend())
 
 if hasattr(settings, OLD):
-    msg = "{} is deprecated and will be removed in ArmLayout 1.4. Use {}.".format(OLD, NEW)
+    msg = "%s is deprecated and will be removed in ArmLayout 1.4. Use %s." % (OLD, NEW)
     warnings.warn(msg, DeprecationWarning)
     render_model = (GenericBackend(OLD,
         defaults="armstrong.core.arm_layout.backends.BasicLayoutBackend")
@@ -23,8 +23,8 @@ from django.template.loader import render_to_string
 
 def deprecate(func):
     def wrapper(*args, **kwargs):
-        msg = "Importing `{}` from this module is deprecated and will be removed in ArmLayout 1.4"
-        warnings.warn(msg.format(func.__name__), DeprecationWarning)
+        msg = "Importing `%s` from this module is deprecated and will be removed in ArmLayout 1.4"
+        warnings.warn(msg % func.__name__, DeprecationWarning)
         return func(*args, **kwargs)
     return wrapper
 
