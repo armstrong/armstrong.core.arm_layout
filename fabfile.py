@@ -18,3 +18,7 @@ settings = {
 
 main_app = "arm_layout"
 tested_apps = (main_app, )
+
+import django
+if django.VERSION >= (1, 6):  # use the old test runner for now
+    settings['TEST_RUNNER'] = 'django.test.simple.DjangoTestSuiteRunner'
