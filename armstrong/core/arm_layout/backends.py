@@ -12,8 +12,7 @@ class BasicLayoutBackend(object):
                 a._meta.object_name.lower(), name))
         return ret
 
-    def render(self, object, name, dictionary=None,
-            context_instance=None):
+    def render(self, object, name, dictionary=None, context_instance=None):
         dictionary = dictionary or {}
         dictionary["object"] = object
         template_name = self.get_layout_template_name(object, name)
@@ -24,13 +23,14 @@ class BasicLayoutBackend(object):
         return self.render(*args, **kwargs)
 
 
-# DEPRECATED: To be removed in ArmLayout 1.4.
+# DEPRECATED: To be removed in ArmLayout 2.0
 import warnings
+
 
 def deprecate(cls):
     def wrapper(*args, **kwargs):
-        msg = "BasicRenderModelBackend is deprecated and will be removed in ArmLayout 1.4. Use BasicLayoutBackend."
-        warnings.warn(msg.format(cls.__name__), DeprecationWarning)
+        msg = "BasicRenderModelBackend is deprecated and will be removed in ArmLayout 2.0. Use %s."
+        warnings.warn(msg % cls.__name__, DeprecationWarning)
         return cls(*args, **kwargs)
     return wrapper
 
