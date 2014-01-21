@@ -17,7 +17,7 @@ from django.template.loader import render_to_string
 
 if hasattr(settings, OLD):
     msg = "%s is deprecated and will be removed in ArmLayout 2.0. Use %s." % (OLD, NEW)
-    warnings.warn(msg, DeprecationWarning)
+    warnings.warn(msg, DeprecationWarning, stacklevel=2)
     render_model = (GenericBackend(OLD,
         defaults="armstrong.core.arm_layout.backends.BasicLayoutBackend")
     .get_backend())
@@ -26,7 +26,7 @@ if hasattr(settings, OLD):
 def deprecate(func):
     def wrapper(*args, **kwargs):
         msg = "Importing `%s` from this module is deprecated and will be removed in ArmLayout 2.0"
-        warnings.warn(msg % func.__name__, DeprecationWarning)
+        warnings.warn(msg % func.__name__, DeprecationWarning, stacklevel=2)
         return func(*args, **kwargs)
     return wrapper
 
