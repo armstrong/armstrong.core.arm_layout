@@ -1,6 +1,10 @@
 import random
 import fudge
-import unittest
+
+try:
+    import unittest2 as unittest  # for Python 2.6, test env will install this
+except ImportError:
+    import unittest
 
 import django
 from django.conf import settings
