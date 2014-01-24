@@ -4,10 +4,11 @@ from ._utils import TestCase
 
 
 class ModelMixinBaseTestCase(TestCase):
-    backend = ModelProvidedLayoutBackend()
+    backend_class = ModelProvidedLayoutBackend
 
-    def setUp(self):
-        super(ModelMixinBaseTestCase, self).setUp()
+    def __init__(self, *args, **kwargs):
+        super(ModelMixinBaseTestCase, self).__init__(*args, **kwargs)
+        self.backend = self.backend_class()
         self.name = "full_page"
         basemodel = Base()
         self.root_model_path = 'layout/%s/%s/' % (
