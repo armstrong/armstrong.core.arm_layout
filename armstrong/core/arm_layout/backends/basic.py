@@ -5,6 +5,19 @@ from ..mixins import ModelPathBaseMixin
 
 
 class BasicLayoutBackend(ModelPathBaseMixin):
+    """
+    Look up model templates using model inheritance as a directory structure.
+
+    This is the default backend. Template lookup follows a directory
+    structure based on class inheritance, children first then parents,
+    and only considers actual Django model classes. Abstract and proxy
+    models also work.
+
+    ex: "proxy_model/template.html"
+        "child_model/template.html"
+        "parent_model/template.html"
+
+    """
     def get_layout_template_name(self, model_obj, name):
         ret = []
         for a in model_obj.__class__.mro():
