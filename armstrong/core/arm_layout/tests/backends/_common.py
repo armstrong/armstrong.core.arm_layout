@@ -2,7 +2,7 @@ import abc
 import random
 import fudge
 
-from ..arm_layout_support.models import Foobar, SubFoobar
+from ..arm_layout_support.models import *
 
 
 class BackendTestCaseMixin(object):
@@ -88,3 +88,35 @@ class BackendTestCaseMixin(object):
             (self.m._meta.app_label, self.m._meta.object_name.lower(), self.name)
 
         self.assertEqual([expected_child, expected_parent], result)
+
+    def test_abstract_models_are_used(self):
+        concrete = ConcreteFoo()
+        abstract = AbstractFoo()
+
+        concrete_path = 'layout/%s/%s/' % \
+            (concrete._meta.app_label, concrete._meta.object_name.lower())
+        abstract_path = 'layout/%s/%s/' % \
+            (abstract._meta.app_label, abstract._meta.object_name.lower())
+        base_path = 'layout/%s/%s/' % \
+            (self.m._meta.app_label, self.m._meta.object_name.lower())
+        expected = [
+            '%s%s.html' % (concrete_path, self.name),
+            '%s%s.html' % (abstract_path, self.name),
+            '%s%s.html' % (base_path, self.name)]
+
+        result = self.backend.get_layout_template_name(concrete, self.name)
+        self.assertEqual(expected, result)
+
+    def test_proxy_models_are_used(self):
+        model = ProxyFoo()
+
+        model_path = 'layout/%s/%s/' % \
+            (model._meta.app_label, model._meta.object_name.lower())
+        base_path = 'layout/%s/%s/' % \
+            (self.m._meta.app_label, self.m._meta.object_name.lower())
+        expected = [
+            '%s%s.html' % (model_path, self.name),
+            '%s%s.html' % (base_path, self.name)]
+
+        result = self.backend.get_layout_template_name(model, self.name)
+        self.assertEqual(expected, result)
