@@ -99,6 +99,8 @@ See the `with documentation`_.
 
 Installation & Configuration
 ----------------------------
+Supports Django 1.3, 1.4, 1.5, 1.6 on Python 2.6 and 2.7.
+
 #. ``pip install armstrong.core.arm_layout``
 
 #. Add ``armstrong.core.arm_layout`` to your ``INSTALLED_APPS``
@@ -160,7 +162,7 @@ probably looking for that.
 
 License
 -------
-Copyright 2011-2013 Texas Tribune and The Center for Investigative Reporting
+Copyright 2011-2014 Texas Tribune and The Center for Investigative Reporting
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
