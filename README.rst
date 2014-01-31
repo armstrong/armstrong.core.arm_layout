@@ -116,16 +116,6 @@ Supports Django 1.3, 1.4, 1.5, 1.6 on Python 2.6 and 2.7.
   common scenarios. Feel free to write your own backend if you need other
   functionality.
 
-! Deprecations !
-""""""""""""""""
-
-``BasicRenderModelBackend`` is now ``BasicLayoutBackend``
-  The new name better reflects the Armstrong component and its purpose.
-  The "render_model" name is more of a template tag implementation detail.
-
-``ARMSTRONG_RENDER_MODEL_BACKEND`` is now ``ARMSTRONG_LAYOUT_BACKEND``
-  The new setting better indicates which Armstrong component it belongs to.
-
 
 Contributing
 ------------
