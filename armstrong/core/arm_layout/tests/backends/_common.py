@@ -9,7 +9,7 @@ from ..arm_layout_support.models import *
 class BackendTestCaseMixin(object):
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractproperty
+    @abc.abstractproperty  # pragma: no cover
     def backend_class(self):
         """backend_class = TestThisBackend"""
 

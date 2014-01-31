@@ -3,7 +3,7 @@ import fudge
 
 try:
     import unittest2 as unittest  # for Python 2.6, test env will install this
-except ImportError:
+except ImportError:  # pragma: no cover
     import unittest
 
 import django
@@ -26,7 +26,7 @@ def generate_random_models(count):
         count -= 1
 
 
-def expectedFailureIf(condition):
+def expectedFailureIf(condition):  # pragma: no cover
     """
     Marks a test as an expected failure if ``condition`` is met.
     code from Django 1.6 :: https://github.com/django/django/commit/a7dc13ec231faf917c3125eb4c158138d4edde10
@@ -43,7 +43,7 @@ class RenderBaseTestCaseMixin(object):
         self.context = Context()
 
     def tearDown(self):
-        # cache the rendered template result during a test run
+        # Clear the cached template between test runs
         if hasattr(self, '_rendered_template'):
             del self._rendered_template
 
@@ -68,7 +68,8 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
 
     @property
     def rendered_template(self):
-        if not hasattr(self, '_rendered_template'):
+        """Cache the rendered template result during a test run"""
+        if not hasattr(self, '_rendered_template'):  # pragma: no cover
             template = "{% load layout_helpers %}" + self.string
             self._rendered_template = Template(template).render(self.context)
         return self._rendered_template
@@ -195,13 +196,10 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
 
     def test_raises_exception_on_missing_template_with_template_debug(self):
         self.string = '{% render_model model_obj "missing" %}'
+        exc = TemplateDoesNotExist if django.VERSION >= (1, 4) else TemplateSyntaxError
         with self.settings(TEMPLATE_DEBUG=True):
-            if django.VERSION < (1, 4):
-                with self.assertRaises(TemplateSyntaxError):
-                    self.rendered_template
-            else:
-                with self.assertRaises(TemplateDoesNotExist):
-                    self.rendered_template
+            with self.assertRaises(exc):
+                self.rendered_template
 
     @fudge.patch(
         'armstrong.core.arm_layout.utils.render_model.get_layout_template_name',
