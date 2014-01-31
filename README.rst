@@ -107,8 +107,12 @@ Installation & Configuration
 
 ``ARMSTRONG_LAYOUT_BACKEND = "armstrong.core.arm_layout.backends.BasicLayoutBackend"``
   Backends specify how the template tags actually determine template paths.
-  At the moment there is only one option--``BasicLayoutBackend``. Feel free
-  to write your own backend if you need other functionality.
+  There are two options--``BasicLayoutBackend`` and
+  ``ModelProvidedLayoutBackend``. Basic uses model inheritance as a directory
+  structure. ModelProvided does the same, but optionally allows a model to
+  determine its own template lookup. A few model mixins are provided for
+  common scenarios. Feel free to write your own backend if you need other
+  functionality.
 
 ! Deprecations !
 """"""""""""""""
