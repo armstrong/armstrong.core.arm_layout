@@ -1,9 +1,11 @@
 armstrong.core.arm_layout
 =========================
-Provides layout related code for use in Armstrong and Django projects.
-
-``arm_layout`` provides you with tools to help streamline displaying content
-from within your application.
+Provides layout and templating features for use in Armstrong and Django
+projects. ``arm_layout`` provides tools to help streamline displaying content
+and excels at rendering standardized, model-specific templates that are easy
+to share or overwrite to be as general or specific as you need. Render your
+model objects wherever you need them in your templates without worrying about
+object specifics or view logic.
 
 
 Usage
@@ -119,16 +121,18 @@ Supports Django 1.3, 1.4, 1.5, 1.6 on Python 2.6 and 2.7.
 
 Contributing
 ------------
+Development occurs on Github. Participation is welcome!
 
-* Create something awesome -- make the code better, add some functionality,
-  whatever (this is the hardest part).
-* `Fork it`_
-* Create a topic branch to house your changes
-* Get all of your commits in the new topic branch
-* Submit a `pull request`_
+* Found a bug? File it on `Github Issues`_. Include as much detail as you
+  can and make sure to list the specific component since we use a centralized,
+  project-wide issue tracker.
+* Have code to submit? Fork the repo, consolidate your changes on a topic
+  branch and create a `pull request`_.
+* Questions, need help, discussion? Use our `Google Group`_ mailing list.
 
+.. _Github Issues: https://github.com/armstrong/armstrong/issues
 .. _pull request: http://help.github.com/pull-requests/
-.. _Fork it: http://help.github.com/forking/
+.. _Google Group: http://groups.google.com/group/armstrongcms
 
 
 State of Project
@@ -138,15 +142,12 @@ organization.  It is the result of a collaboration between the `Texas Tribune`_
 and `The Center for Investigative Reporting`_ and a grant from the
 `John S. and James L. Knight Foundation`_.
 
-To follow development, be sure to join the `Google Group`_.
-
 ``armstrong.core.arm_layout`` is part of the `Armstrong`_ project.  You're
 probably looking for that.
 
 .. _Texas Tribune: http://www.texastribune.org/
 .. _The Center for Investigative Reporting: http://cironline.org/
 .. _John S. and James L. Knight Foundation: http://www.knightfoundation.org/
-.. _Google Group: http://groups.google.com/group/armstrongcms
 .. _Armstrong: http://www.armstrongcms.org/
 
 
