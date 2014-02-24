@@ -9,7 +9,7 @@ from .model_provided import ModelProvidedLayoutBackend
 import warnings
 
 
-class BasicRenderModelBackend(BasicLayoutBackend):
+class BasicRenderModelBackend(BasicLayoutBackend):  # pragma: no cover
     def __init__(self, *args, **kwargs):
         msg = "BasicRenderModelBackend is deprecated and will be removed in ArmLayout 2.0. Use BasicLayoutBackend."
         warnings.warn(msg, DeprecationWarning, stacklevel=2)
