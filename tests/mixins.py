@@ -1,5 +1,5 @@
 from armstrong.core.arm_layout.backends import ModelProvidedLayoutBackend
-from .arm_layout_support.models import *
+from .support.models import *
 from ._utils import TestCase
 
 
