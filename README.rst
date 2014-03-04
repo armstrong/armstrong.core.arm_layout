@@ -126,6 +126,7 @@ Development occurs on Github. Participation is welcome!
 * Found a bug? File it on `Github Issues`_. Include as much detail as you
   can and make sure to list the specific component since we use a centralized,
   project-wide issue tracker.
+* Testing? ``pip install tox`` and run ``tox``
 * Have code to submit? Fork the repo, consolidate your changes on a topic
   branch and create a `pull request`_. The `armstrong.dev`_ package provides
   tools for testing, coverage and South migration as well as making it very
