@@ -127,11 +127,14 @@ Development occurs on Github. Participation is welcome!
   can and make sure to list the specific component since we use a centralized,
   project-wide issue tracker.
 * Have code to submit? Fork the repo, consolidate your changes on a topic
-  branch and create a `pull request`_.
+  branch and create a `pull request`_. The `armstrong.dev`_ package provides
+  tools for testing, coverage and South migration as well as making it very
+  easy to run a full Django environment with this component's settings.
 * Questions, need help, discussion? Use our `Google Group`_ mailing list.
 
 .. _Github Issues: https://github.com/armstrong/armstrong/issues
 .. _pull request: http://help.github.com/pull-requests/
+.. _armstrong.dev: https://github.com/armstrong/armstrong.dev
 .. _Google Group: http://groups.google.com/group/armstrongcms
 
 
