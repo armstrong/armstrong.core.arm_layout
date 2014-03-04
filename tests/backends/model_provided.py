@@ -1,4 +1,4 @@
-from ...backends import ModelProvidedLayoutBackend
+from armstrong.core.arm_layout.backends import ModelProvidedLayoutBackend
 from ..arm_layout_support.models import HasOwnLayoutMethod
 from .._utils import TestCase
 from ._common import BackendTestCaseMixin

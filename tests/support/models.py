@@ -1,5 +1,5 @@
 from django.db import models
-from ...mixins import *
+from armstrong.core.arm_layout.mixins import *
 
 
 class Foobar(models.Model):
