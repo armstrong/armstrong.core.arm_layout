@@ -1,6 +1,18 @@
 CHANGES
 =======
 
+1.4.0 (unreleased)
+------------------
+
+- Use Setuptools and pkg_resources for namespacing
+
+- Development: use ArmDev 2.0
+
+- Development: added Tox testing config
+
+- Stop shipping tests and move them out of the component module
+
+
 1.3.0 (2014-02-24)
 ------------------
 

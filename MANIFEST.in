@@ -1,5 +1,7 @@
+include LICENSE
 include MANIFEST.in
 include README.rst
 include CHANGES.rst
 include package.json
 prune build/*
+prune tests

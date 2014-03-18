@@ -141,18 +141,16 @@ Development occurs on Github. Participation is welcome!
 
 State of Project
 ----------------
-Armstrong is an open-source news platform that is freely available to any
-organization.  It is the result of a collaboration between the `Texas Tribune`_
+`Armstrong`_ is an open-source news platform that is freely available to any
+organization. It is the result of a collaboration between the `Texas Tribune`_
 and `The Center for Investigative Reporting`_ and a grant from the
-`John S. and James L. Knight Foundation`_.
+`John S. and James L. Knight Foundation`_. Armstrong is available as a
+complete bundle and as individual, stand-alone components.
 
-``armstrong.core.arm_layout`` is part of the `Armstrong`_ project.  You're
-probably looking for that.
-
+.. _Armstrong: http://www.armstrongcms.org/
 .. _Texas Tribune: http://www.texastribune.org/
 .. _The Center for Investigative Reporting: http://cironline.org/
 .. _John S. and James L. Knight Foundation: http://www.knightfoundation.org/
-.. _Armstrong: http://www.armstrongcms.org/
 
 
 License
