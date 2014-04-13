@@ -1,0 +1,6 @@
+[run]
+source = armstrong.core.arm_layout
+branch = True
+
+[html]
+directory = coverage

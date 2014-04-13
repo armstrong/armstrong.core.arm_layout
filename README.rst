@@ -4,6 +4,9 @@ armstrong.core.arm_layout
 .. image:: https://travis-ci.org/armstrong/armstrong.core.arm_layout.svg?branch=master
   :target: https://travis-ci.org/armstrong/armstrong.core.arm_layout
   :alt: TravisCI status
+.. image:: https://coveralls.io/repos/armstrong/armstrong.core.arm_layout/badge.png
+  :target: https://coveralls.io/r/armstrong/armstrong.core.arm_layout
+  :alt: Coverage status
 .. image:: https://pypip.in/version/armstrong.core.arm_layout/badge.png
   :target: https://pypi.python.org/pypi/armstrong.core.arm_layout/
   :alt: PyPI Version
