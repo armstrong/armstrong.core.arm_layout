@@ -126,29 +126,31 @@ Development occurs on Github. Participation is welcome!
 * Found a bug? File it on `Github Issues`_. Include as much detail as you
   can and make sure to list the specific component since we use a centralized,
   project-wide issue tracker.
+* Testing? ``pip install tox`` and run ``tox``
 * Have code to submit? Fork the repo, consolidate your changes on a topic
-  branch and create a `pull request`_.
+  branch and create a `pull request`_. The `armstrong.dev`_ package provides
+  tools for testing, coverage and South migration as well as making it very
+  easy to run a full Django environment with this component's settings.
 * Questions, need help, discussion? Use our `Google Group`_ mailing list.
 
 .. _Github Issues: https://github.com/armstrong/armstrong/issues
 .. _pull request: http://help.github.com/pull-requests/
+.. _armstrong.dev: https://github.com/armstrong/armstrong.dev
 .. _Google Group: http://groups.google.com/group/armstrongcms
 
 
 State of Project
 ----------------
-Armstrong is an open-source news platform that is freely available to any
-organization.  It is the result of a collaboration between the `Texas Tribune`_
+`Armstrong`_ is an open-source news platform that is freely available to any
+organization. It is the result of a collaboration between the `Texas Tribune`_
 and `The Center for Investigative Reporting`_ and a grant from the
-`John S. and James L. Knight Foundation`_.
+`John S. and James L. Knight Foundation`_. Armstrong is available as a
+complete bundle and as individual, stand-alone components.
 
-``armstrong.core.arm_layout`` is part of the `Armstrong`_ project.  You're
-probably looking for that.
-
+.. _Armstrong: http://www.armstrongcms.org/
 .. _Texas Tribune: http://www.texastribune.org/
 .. _The Center for Investigative Reporting: http://cironline.org/
 .. _John S. and James L. Knight Foundation: http://www.knightfoundation.org/
-.. _Armstrong: http://www.armstrongcms.org/
 
 
 License

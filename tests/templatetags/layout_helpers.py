@@ -12,7 +12,7 @@ from django.test import signals
 from django.template import (Context, Template,
     TemplateDoesNotExist, TemplateSyntaxError)
 
-from ..arm_layout_support.models import Foobar
+from ..support.models import Foobar
 from .._utils import TestCase
 
 

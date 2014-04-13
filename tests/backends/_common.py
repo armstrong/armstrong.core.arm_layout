@@ -3,7 +3,7 @@ import random
 import fudge
 from contextlib import contextmanager
 
-from ..arm_layout_support.models import *
+from ..support.models import *
 
 
 class BackendTestCaseMixin(object):
