@@ -1,5 +1,16 @@
 armstrong.core.arm_layout
 =========================
+
+.. image:: https://travis-ci.org/armstrong/armstrong.core.arm_layout.svg?branch=master
+  :target: https://travis-ci.org/armstrong/armstrong.core.arm_layout
+  :alt: TravisCI status
+.. image:: https://pypip.in/version/armstrong.core.arm_layout/badge.png
+  :target: https://pypi.python.org/pypi/armstrong.core.arm_layout/
+  :alt: PyPI Version
+.. image:: https://pypip.in/license/armstrong.core.arm_layout/badge.png
+  :target: https://pypi.python.org/pypi/armstrong.core.arm_layout/
+  :alt: License
+
 Provides layout and templating features for use in Armstrong and Django
 projects. ``arm_layout`` provides tools to help streamline displaying content
 and excels at rendering standardized, model-specific templates that are easy
@@ -151,20 +162,3 @@ complete bundle and as individual, stand-alone components.
 .. _Texas Tribune: http://www.texastribune.org/
 .. _The Center for Investigative Reporting: http://cironline.org/
 .. _John S. and James L. Knight Foundation: http://www.knightfoundation.org/
-
-
-License
--------
-Copyright 2011-2014 Texas Tribune and The Center for Investigative Reporting
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
