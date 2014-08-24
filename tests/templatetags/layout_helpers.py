@@ -2,7 +2,7 @@ import random
 import fudge
 
 try:
-    import unittest2 as unittest  # for Python 2.6, test env will install this
+    import unittest2 as unittest  # PY26, test env will install this
 except ImportError:  # pragma: no cover
     import unittest
 
@@ -26,6 +26,7 @@ def generate_random_models(count):
         count -= 1
 
 
+# DROP_WITH_DJANGO13
 def expectedFailureIf(condition):  # pragma: no cover
     """
     Marks a test as an expected failure if ``condition`` is met.
@@ -196,7 +197,7 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
 
     def test_raises_exception_on_missing_template_with_template_debug(self):
         self.string = '{% render_model model_obj "missing" %}'
-        exc = TemplateDoesNotExist if django.VERSION >= (1, 4) else TemplateSyntaxError
+        exc = TemplateDoesNotExist if django.VERSION >= (1, 4) else TemplateSyntaxError  # DROP_WITH_DJANGO13
         with self.settings(TEMPLATE_DEBUG=True):
             with self.assertRaises(exc):
                 self.rendered_template
@@ -305,7 +306,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         with self.assertRaisesRegexp(TemplateDoesNotExist, "%s.html" % random_tpl_var):
             self.rendered_template
 
-    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
+    @expectedFailureIf(django.VERSION < (1, 4))  # DROP_WITH_DJANGO13 simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_list_argument(self):
         models = list(generate_random_models(5))
 
@@ -316,7 +317,7 @@ class RenderListTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[1].title in self.rendered_template)
         self.assertFalse(models[2].title in self.rendered_template)
 
-    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
+    @expectedFailureIf(django.VERSION < (1, 4))  # DROP_WITH_DJANGO13 simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_template_argument(self):
         models = list(generate_random_models(2))
 
@@ -457,7 +458,7 @@ class RenderIterTestCase(RenderBaseTestCaseMixin, TestCase):
         self.assertTrue(models[0].title in self.rendered_template)
         self.assertFalse(models[1].title in self.rendered_template)
 
-    @expectedFailureIf(django.VERSION < (1, 4))  # simple_tag() can handle filters in Django 1.4
+    @expectedFailureIf(django.VERSION < (1, 4))  # DROP_WITH_DJANGO13 simple_tag() can handle filters in Django 1.4
     def test_filters_work_on_template_argument(self):
         models = list(generate_random_models(2))
 
