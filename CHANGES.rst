@@ -4,6 +4,8 @@ CHANGES
 1.4.0 (unreleased)
 ------------------
 
+- Support for Django 1.7
+
 - Use Setuptools and pkg_resources for namespacing
 
 - Development: use ArmDev 2.0
