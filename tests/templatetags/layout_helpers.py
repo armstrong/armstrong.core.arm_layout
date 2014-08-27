@@ -220,7 +220,7 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
     def test_rendered_context_sets_provided_obj_as_object_variable(self):
         # Copying the capture technique used by django.test.client.request()
         def on_template_render(signal, sender, template, context, **kwargs):
-            if template.name.endswith('full.html'):
+            if template.name and template.name.endswith('full.html'):
                 self.assertTrue('object' in context)
                 self.assertEqual(self.model, context['object'])
         signals.template_rendered.connect(on_template_render, dispatch_uid="template-render")
@@ -239,7 +239,11 @@ class RenderModelTestCase(RenderBaseTestCaseMixin, TestCase):
 
         # Copying the capture technique used by django.test.client.request()
         def on_template_render(signal, sender, template, context, **kwargs):
-            if not template.name.endswith('full.html'):
+            if template.name and template.name.endswith('full.html'):
+                # within the render_model call `object` will be the model
+                self.assertEqual(self.model, context['object'])
+            else:
+                # outside the render_model call `object` will be our Fake
                 self.assertEqual(obj, context['object'])
         signals.template_rendered.connect(on_template_render, dispatch_uid="template-render")
 
