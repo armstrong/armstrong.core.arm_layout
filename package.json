@@ -3,6 +3,6 @@
     "version": "1.3.0",
     "description": "Layout code related to Armstrong",
     "install_requires": [
-        "armstrong.utils.backends>=1.0.0,<2.0"
+        "armstrong.utils.backends>=1.0.0,<2.0,!=1.1.0"
     ]
 }
