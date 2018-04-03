@@ -7,10 +7,10 @@ armstrong.core.arm_layout
 .. image:: https://img.shields.io/coveralls/armstrong/armstrong.core.arm_layout.svg
   :target: https://coveralls.io/r/armstrong/armstrong.core.arm_layout
   :alt: Coverage status
-.. image:: https://pypip.in/version/armstrong.core.arm_layout/badge.svg
+.. image:: https://img.shields.io/pypi/v/armstrong.core.arm_layout.svg
   :target: https://pypi.python.org/pypi/armstrong.core.arm_layout/
   :alt: PyPI Version
-.. image:: https://pypip.in/license/armstrong.core.arm_layout/badge.svg
+.. image:: https://img.shields.io/pypi/l/armstrong.core.arm_layout.svg
   :target: https://pypi.python.org/pypi/armstrong.core.arm_layout/
   :alt: License
 
